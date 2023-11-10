@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "62059107234",
+    "project_id": "autozone-5d681",
+    "storage_bucket": "autozone-5d681.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:62059107234:android:0b00e8fdbd67d55b3658fb",
+        "android_client_info": {
+          "package_name": "com.example.autozone"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCNRRrqf-OqTlZG633YYCm6etg7r_V_Yrc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,4 @@
+enum OtpVerifyEnum {
+  verifiy,
+  error,
+}

@@ -66,7 +66,7 @@ class AutozoneAppBar extends StatelessWidget {
                     Icons.notifications,
                     color: Color(0xff164866),
                     weight: 25,
-                    size: 25,
+                    size: 30,
                   ),
                 ),
                 notificationCount != 0

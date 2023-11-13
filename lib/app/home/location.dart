@@ -143,7 +143,7 @@ class _ChooseLocationPageState extends State<ChooseLocationPage> {
           return false;
         }
       });
-      
+
       if (provinceTexPlaceData.length == 1 && additionalLocations.isEmpty) {
         checkedValue = List.filled(provinceTexPlaceData.length, true);
         paymentMetadata["name"] = provinceTexPlaceData[0]["data"]["name"];
@@ -200,6 +200,7 @@ class _ChooseLocationPageState extends State<ChooseLocationPage> {
         ),
       ),
       body: Container(
+        margin: const EdgeInsets.only(top: 25),
         width: double.infinity,
         height: double.infinity,
         color: Colors.white,

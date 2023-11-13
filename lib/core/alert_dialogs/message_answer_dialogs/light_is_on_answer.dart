@@ -18,9 +18,9 @@ void lightIsOnAnswer(BuildContext context, String carNumber,
                 Container(
                   height: 70,
                   alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: const Color(0xffF3F4F6),
-                    borderRadius: BorderRadius.circular(10),
+                  decoration: const BoxDecoration(
+                    color: Color(0xffF3F4F6),
+                    // borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
                     "$carNumber մեքենայի վարորդ, Ձեր մեքենայի լուսարձակները միացված են։",
@@ -32,7 +32,7 @@ void lightIsOnAnswer(BuildContext context, String carNumber,
                     ),
                   ),
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 20,
                 ),
                 const Image(
@@ -40,14 +40,14 @@ void lightIsOnAnswer(BuildContext context, String carNumber,
                   width: 200,
                   height: 58,
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 20,
                 ),
                 ButtonFactory.createButton("cta_green", "Շնորհակալություն", () {
                   onApprove();
                 }, double.infinity, 42,
                     margin: const EdgeInsets.only(left: 20, right: 20, top: 5)),
-                SizedBox(
+                const SizedBox(
                   height: 30,
                 ),
                 InkWell(

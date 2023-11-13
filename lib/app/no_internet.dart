@@ -32,6 +32,7 @@ class _NoInternetPageState extends State<NoInternetPage> {
                 height: 150,
               ),
             ),
+            const SizedBox(),
             const Text(
               "Ինտերնետ կապը բացակայում է",
               style: TextStyle(
@@ -39,6 +40,7 @@ class _NoInternetPageState extends State<NoInternetPage> {
                   fontSize: 15,
                   color: Color(0xff164866)),
             ),
+            const SizedBox(),
             tryAgainButton()
           ],
         ),

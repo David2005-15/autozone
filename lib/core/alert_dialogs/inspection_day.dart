@@ -20,7 +20,7 @@ void showInspectionExpire(
       "due_date": date.toIso8601String(),
       "reg_number": regNumber
     });
-    
+
     showDialog(
         context: context,
         builder: (context) {

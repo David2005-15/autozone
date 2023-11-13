@@ -5,7 +5,7 @@ class PaymentStatusPage extends StatefulWidget {
   final String stationName;
   final String stationAddress;
   final List<String> payments;
-  final List<dynamic> payinfo;
+  final dynamic payinfo;
 
   const PaymentStatusPage(
       {required this.stationName,
@@ -19,6 +19,17 @@ class PaymentStatusPage extends StatefulWidget {
 }
 
 class _PaymentStatusState extends State<PaymentStatusPage> {
+  dynamic it;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // var it = widget.payinfo[i]["items"].firstWhere((item) {
+    //   return item["service"]["name"] == widget.payments[i];
+    // });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -91,9 +102,10 @@ class _PaymentStatusState extends State<PaymentStatusPage> {
                 width: double.infinity,
                 height: 57,
                 decoration: const BoxDecoration(
-                  color: Color(0xffF3F4F6),
-                  border: Border(
-                      bottom: BorderSide(color: Color(0xffECECEC), width: 1))),
+                    color: Color(0xffF3F4F6),
+                    border: Border(
+                        bottom:
+                            BorderSide(color: Color(0xffECECEC), width: 1))),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -109,10 +121,10 @@ class _PaymentStatusState extends State<PaymentStatusPage> {
                       margin: const EdgeInsets.only(right: 27),
                       child: InkWell(
                         onTap: () {
-                          var it = widget.payinfo[i]["items"].firstWhere(
-                              (item) =>
-                                  item["service"]["name"] ==
-                                  widget.payments[i]);
+                          var it =
+                              widget.payinfo["items"].firstWhere((item) {
+                            return item["service"]["name"] == widget.payments[i];
+                          });
 
                           var info = {
                             "name": it["service"]["name"],
@@ -123,14 +135,14 @@ class _PaymentStatusState extends State<PaymentStatusPage> {
                               context,
                               MaterialPageRoute(
                                   builder: (context) => PaymentInfo(
-                                        date: widget.payinfo[i]["created_at"],
-                                        autoMark: widget.payinfo[i]["request"]
+                                        date: widget.payinfo["created_at"],
+                                        autoMark: widget.payinfo["request"]
                                             ["car"],
-                                        autoNumber: widget.payinfo[i]["request"]
+                                        autoNumber: widget.payinfo["request"]
                                             ["car_reg_no"],
                                         items: info,
                                         mijnordavchar: "300",
-                                        name: widget.payinfo[i]["name"],
+                                        name: widget.payinfo["name"],
                                       )));
                         },
                         child: const Image(

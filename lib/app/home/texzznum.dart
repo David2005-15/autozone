@@ -208,7 +208,7 @@ class _TexPageState extends State<TexPage> {
             const SizedBox(
               height: 35,
             ),
-            Expanded(
+            payInfo.isNotEmpty ?  Expanded(
               child: SingleChildScrollView(
                 child: Column(
                   children: <Widget>[
@@ -250,7 +250,7 @@ class _TexPageState extends State<TexPage> {
                                       MaterialPageRoute(
                                           builder: (context) =>
                                               PaymentStatusPage(
-                                                  payinfo: payInfo,
+                                                  payinfo: payInfo[i],
                                                   stationName: payInfo[i]
                                                               ["partner"]
                                                           ["translations"]["hy"]
@@ -282,7 +282,7 @@ class _TexPageState extends State<TexPage> {
                                                               ["partner"]
                                                           ["translations"]["hy"]
                                                       ["name"],
-                                                  payinfo: payInfo,
+                                                  payinfo: payInfo[i],
                                                   stationAddress: payInfo[i]
                                                               ["partner"]
                                                           ["translations"]["hy"]
@@ -366,7 +366,7 @@ class _TexPageState extends State<TexPage> {
                   ],
                 ),
               ),
-            )
+            ): Container()
           ],
         ),
       ),

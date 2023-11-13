@@ -59,19 +59,18 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
             if (documents[i]["answer"].toString().isNotEmpty) {
               setState(() {
-                notifications[documents[i]['date'] + "0"] = notificationTile(
-                  "${documents[i]["car_number"]} վարորդի պատասխանը",
-                  documents[i]["answer"],
-                  documents[i]['date'],
-                  widget.userId == documents[i]["issued_user_id"] as int,
+                notifications[DateTime.parse(documents[i]['date']).add(const Duration(seconds: 1)).toIso8601String()] = notificationTile(
+                    "${documents[i]["car_number"]} վարորդի պատասխանը",
+                    documents[i]["answer"],
+                    documents[i]['date'],
+                    widget.userId == documents[i]["issued_user_id"] as int,
 
-                  // documents[i]["requested_user_id"] as int == widget.userId,
-                  isRequested:
-                      documents[i]["requested_user_id"] as int == widget.userId,
-                  answer: documents[i]["answer"],
-                  document: documents[i],
-                  forAnswer: true
-                );
+                    // documents[i]["requested_user_id"] as int == widget.userId,
+                    isRequested: documents[i]["requested_user_id"] as int ==
+                        widget.userId,
+                    answer: documents[i]["answer"],
+                    document: documents[i],
+                    forAnswer: true);
               });
             }
           }
@@ -100,6 +99,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
       } catch (e) {}
 
       List<MapEntry<String, Widget>> entries = notifications.entries.toList();
+
+      var temp = notifications;
 
       entries.sort(
           (a, b) => DateTime.parse(b.key).compareTo(DateTime.parse(a.key)));
@@ -278,12 +279,20 @@ class _NotificationsPageState extends State<NotificationsPage> {
   }
 
   bool getTheRec(bool answer, int recId, int reqId) {
-      if(answer) {
-        return recId == widget.userId;
+    if (answer) {
+      if (reqId == widget.userId) {
+        return true;
       }
 
-      return reqId == widget.userId;
+      return false;
     }
+
+    if (reqId == widget.userId) {
+      return false;
+    }
+
+    return true;
+  }
 
   Widget notificationTile(String title, String body, String date, bool seen,
       {bool isAnswered = true,
@@ -315,9 +324,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
     print(recId == widget.userId);
     print(reqId == widget.userId);
-
-
-    
 
     return Container(
       width: double.infinity,
@@ -456,7 +462,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
                                 if (document["issue_type"] == "car_number") {
                                   String answer =
-                                      "Խնդրում եմ զանգահարել $number հեռախոսահամարին";
+                                      "Խնդրում եմ զանգահարել 0$number հեռախոսահամարին";
 
                                   snapshot.ref.update({"$key/answer": answer});
                                 } else {

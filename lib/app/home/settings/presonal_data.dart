@@ -72,7 +72,7 @@ class _PersonalDataState extends State<PersonalData> {
           ),
         ),
         title: const Text(
-          "Անձնական Տվյալներ",
+          "Անձնական տվյալներ",
           style: TextStyle(
               fontWeight: FontWeight.w700,
               fontSize: 15,

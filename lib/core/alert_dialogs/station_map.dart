@@ -86,8 +86,7 @@ void showMapDialog(
                 width: double.infinity,
                 height: 300,
                 child: Stack(
-                  children: [
-                    
+                  children: [                    
                     GoogleMap(
                       initialCameraPosition: CameraPosition(
                         target: LatLng(latitude, longitude),
@@ -106,9 +105,9 @@ void showMapDialog(
                     Align(
                       alignment: Alignment.topLeft,
                       child: Container(
-                        margin: const EdgeInsets.only(top: 10, left: 10),
+                        margin: const EdgeInsets.only(top: 10, left: 10, right: 10),
                         height: 40,
-                        width: 220,
+                        // width: 220,
                         decoration: BoxDecoration(
                           color: const Color(0xffF2F2F4),
                           borderRadius: BorderRadius.circular(6),

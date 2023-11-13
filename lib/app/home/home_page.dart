@@ -164,12 +164,12 @@ class _HomePageState extends State<HomePage> {
 
                   if (value["issue_type"] == "car_number") {
                     String answer =
-                        "Խնդրում եմ զանգահարել $number հեռախոսահամարին";
+                        "Խնդրում եմ զանգահարել 0$number հեռախոսահամարին";
 
                     snapshot.ref.update({"${snapshot.key}/answer": answer});
 
                     sendMessage(value["issued_user_id"] as int, "AutoZone",
-                        "Խնդրում եմ զանգահարել $number հեռախոսահամարին");
+                        "Խնդրում եմ զանգահարել 0$number հեռախոսահամարին");
                   } else {
                     snapshot.ref
                         .update({"${snapshot.key}/answer": "Շուտով կմոտենամ"});
@@ -192,6 +192,19 @@ class _HomePageState extends State<HomePage> {
           setState(() {
             notificationCount += 1;
           });
+
+          RegExp exp = RegExp(r'\b\d+\b');
+
+          String updatedText =
+              value["answer"].toString().replaceAllMapped(exp, (match) {
+            String number = match[0]!;
+            if (!number.startsWith('0')) {
+              number = '0$number';
+            }
+            return number;
+          });
+
+          print(updatedText);
 
           showDialog(
               context: context,
@@ -224,7 +237,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ),
                         Text(
-                          value["answer"],
+                          updatedText,
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                             fontWeight: FontWeight.w700,
@@ -236,7 +249,9 @@ class _HomePageState extends State<HomePage> {
                             ? InkWell(
                                 onTap: () async {
                                   String phoneNumber =
-                                      "0${value["phoneNumber"]}";
+                                      "${value["phoneNumber"]}";
+
+                                  print(phoneNumber);
 
                                   Uri url = Uri.parse('tel:$phoneNumber');
 
@@ -412,12 +427,11 @@ class _HomePageState extends State<HomePage> {
                 splashColor: Colors.transparent,
                 highlightColor: Colors.transparent),
             child: BottomNavigationBar(
-              backgroundColor: const Color(0xffF2F2F4),
+              backgroundColor: const Color(0xffF3F4F6),
               showSelectedLabels: false,
               elevation: 0,
               showUnselectedLabels: false,
               onTap: (index) {
-            
                 if (index == 0 && _navigationBarPage != 0) {
                   if (widget.isRedirect == true) {
                     Navigator.push(
@@ -426,14 +440,14 @@ class _HomePageState extends State<HomePage> {
                             builder: (context) =>
                                 const HomePage(isRedirect: false)));
                   }
-            
+
                   getAutoList();
                 }
-            
+
                 if (index == 1 && _navigationBarPage == 1) {
                   searchCarPageKey.currentState!.resetState();
                 }
-            
+
                 setState(() {
                   _navigationBarPage = index;
                 });
@@ -558,7 +572,9 @@ class _HomePageState extends State<HomePage> {
                             title: "Տեխզննում",
                             date: autoTexDates.isEmpty
                                 ? "${DateTime.now().month}.${DateTime.now().year}"
-                                : autoTexDates[_selected].year != 1970 ? "${autoTexDates[_selected].month.toString().padLeft(2, '0')}.${autoTexDates[_selected].year}": "-",
+                                : autoTexDates[_selected].year != 1970
+                                    ? "${autoTexDates[_selected].month.toString().padLeft(2, '0')}.${autoTexDates[_selected].year}"
+                                    : "-",
                             onTap: () {
                               Navigator.push(
                                   context,

@@ -547,7 +547,13 @@ class SearchCarPageState extends State<SearchCarPage> {
     return Expanded(
       flex: 1,
       child: InkWell(
-        onTap: onTap,
+        onTap: () async {
+          onTap();
+          Future.delayed(const Duration(seconds: 5), () {
+            // Navigator.pop(context);
+            resetState();
+          });
+        },
         child: Container(
           width: 175,
           height: 120,

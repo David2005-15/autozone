@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:material_symbols_icons/symbols.dart';
 
 class HomePageControlTile extends StatelessWidget {
   final String title;
@@ -40,43 +39,47 @@ class HomePageControlTile extends StatelessWidget {
                     ),
                     width: 72,
                     height: 42,
-                    child: Row(
-                      children: [
-                        const SizedBox(width: 5,),
-                        const Image(
-                          image: AssetImage(
-                              "assets/Settings/IconRightChevron.png"),
-                          width: 10,
-                          height: 15,
-                          color: Color(0xff164866),
-                        ),
-                        const SizedBox(width: 5,),
-                        Container(
-                          padding: const EdgeInsets.only(right: 2, left: 3),
-                          decoration: BoxDecoration(
-                            color: const Color(0xff164866),
-                            borderRadius: BorderRadius.circular(6),
+                    alignment: Alignment.center,
+                    child: Center(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const SizedBox(width: 5,),
+                          const Image(
+                            image: AssetImage(
+                                "assets/Settings/IconRightChevron.png"),
+                            width: 10,
+                            height: 15,
+                            color: Color(0xff164866),
                           ),
-                          height: 22,
-                          width: 42,
-                          alignment: Alignment.center,
-                          child: FittedBox(
-                            fit: BoxFit.contain,
-                            child: Text(
-                              date,
-                              style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700),
+                          const SizedBox(width: 5,),
+                          Container(
+                            padding: const EdgeInsets.only(right: 4, left: 4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xff164866),
+                              borderRadius: BorderRadius.circular(6),
                             ),
-                          ),
-                        )
-                      ],
+                            height: 22,
+                            width: 42,
+                            alignment: Alignment.center,
+                            child: FittedBox(
+                              fit: BoxFit.contain,
+                              child: Text(
+                                date,
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700),
+                              ),
+                            ),
+                          )
+                        ],
+                      ),
                     ),
                   ),
                 ),
                 Container(
-                  margin: const EdgeInsets.only(left: 10),
+                  margin: const EdgeInsets.only(left: 10, right: 10),
                   child: Text(
                     title,
                     style: const TextStyle(

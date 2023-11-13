@@ -139,40 +139,47 @@ class _TexPay extends State<TexPay> {
         color: Colors.white,
         child: serviceToPay.isNotEmpty
             ? SizedBox(
-              height: MediaQuery.of(context).size.height - 100,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                height: MediaQuery.of(context).size.height - 100,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Expanded(
                       child: SingleChildScrollView(
                         child: Column(
                           children: [
-                            buildTaxPayment(widget.insuranceName, widget.address,
-                                widget.workingHours),
+                            buildTaxPayment(widget.insuranceName,
+                                widget.address, widget.workingHours),
                             buildAutoNumber(
                                 widget.autoNumber,
-                                serviceToPay[0]["extra_name"].toString().isNotEmpty,
+                                serviceToPay[0]["extra_name"]
+                                    .toString()
+                                    .isNotEmpty,
                                 serviceToPay[0]["extra_name"]),
                             buildPaySectionsCo(
                                 serviceToPay[0]["info"]["name"].toString(),
                                 serviceToPay[0]["amounts"]["data"]
-                                    .take(serviceToPay[0]["amounts"]["data"].length - 1)
+                                    .take(serviceToPay[0]["amounts"]["data"]
+                                            .length -
+                                        1)
                                     .map<String>((e) {
                                   // return (serviceToPay[0]["info"]["name"] + e["extra_label"] ?? "").toString();
                                   if (e["extra_label"] == null) {
-                                    return (serviceToPay[0]["info"]["name"]).toString();
+                                    return (serviceToPay[0]["info"]["name"])
+                                        .toString();
                                   }
-                                  
+
                                   return (serviceToPay[0]["info"]["name"] +
                                               e["extra_label"] ??
                                           "")
                                       .toString();
                                 }).toList(),
                                 serviceToPay[0]["amounts"]["data"]
-                                    .take(serviceToPay[0]["amounts"]["data"].length - 1)
+                                    .take(serviceToPay[0]["amounts"]["data"]
+                                            .length -
+                                        1)
                                     .map<String>((e) {
                                   coSum += int.parse(e["amount"].toString());
-                                  
+
                                   return e["amount"].toString();
                                 }).toList(),
                                 serviceToPay[0]["amounts"]["data"]
@@ -181,7 +188,7 @@ class _TexPay extends State<TexPay> {
                                 coSwitch, (val) {
                               setState(() {
                                 coSwitch = val!;
-                                  
+
                                 if (!coSwitch) {
                                   currentAmount -= coSum;
                                   payServicesId.remove(serviceToPay[0]["id"]);
@@ -189,8 +196,9 @@ class _TexPay extends State<TexPay> {
                                   currentAmount += coSum;
                                   payServicesId.add(serviceToPay[0]["id"]);
                                 }
-                                  
-                                if (coSwitch == false && texPaymentSwitch == false) {
+
+                                if (coSwitch == false &&
+                                    texPaymentSwitch == false) {
                                   texPaymentSwitch = true;
                                   currentAmount += texSum;
                                   payServicesId.add(serviceToPay[1]["id"]);
@@ -206,7 +214,7 @@ class _TexPay extends State<TexPay> {
                                 texPaymentSwitch, (val) {
                               setState(() {
                                 texPaymentSwitch = val!;
-                                  
+
                                 if (!texPaymentSwitch) {
                                   currentAmount -= texSum;
                                   payServicesId.remove(serviceToPay[1]["id"]);
@@ -214,21 +222,22 @@ class _TexPay extends State<TexPay> {
                                   currentAmount += texSum;
                                   payServicesId.add(serviceToPay[1]["id"]);
                                 }
-                                  
-                                if (coSwitch == false && texPaymentSwitch == false) {
+
+                                if (coSwitch == false &&
+                                    texPaymentSwitch == false) {
                                   coSwitch = true;
                                   currentAmount += coSum;
                                   payServicesId.add(serviceToPay[0]["id"]);
                                 }
-                                  
+
                                 print(payServicesId);
                               });
                             }),
                             Container(
                               height: 50,
                               width: double.infinity,
-                              margin:
-                                  const EdgeInsets.only(right: 10, left: 10, top: 10),
+                              margin: const EdgeInsets.only(
+                                  right: 10, left: 10, top: 10),
                               color: const Color(0XFFF3F4F6),
                               alignment: Alignment.center,
                               child: Text(
@@ -247,39 +256,39 @@ class _TexPay extends State<TexPay> {
                       if (haveAlreadyClicked) {
                         return;
                       }
-            
+
                       setState(() {
                         haveAlreadyClicked = true;
                       });
-            
+
                       Dio dio = Dio();
-            
+
                       var body = {
                         "techNumber": widget.regNumber,
                         "station": widget.station,
                         "services": payServicesId
                       };
-            
+
                       loading(context);
-            
+
                       var response = await dio.post(
                           "https://autozone.onepay.am/api/v1/techPayment/getPaymentURL",
                           data: body,
                           options: Options(validateStatus: (status) {
                         return true;
                       }));
-            
+
                       setState(() {
                         haveAlreadyClicked = true;
                       });
-            
+
                       try {
                         if (await canLaunchUrl(
                             Uri.parse(response.data["order"]["formUrl"]))) {
                           await launchUrl(
                               Uri.parse(response.data["order"]["formUrl"]));
                           Navigator.pop(context);
-            
+
                           Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -291,18 +300,18 @@ class _TexPay extends State<TexPay> {
                         setState(() {
                           haveAlreadyClicked = true;
                         });
-            
+
                         Navigator.pop(context);
-            
+
                         // ignore: use_build_context_synchronously
                         fail(context, "Գործարքը մերժված է");
                       }
                     }, double.infinity, 48,
-                        margin:
-                            const EdgeInsets.only(right: 25, left: 25, top: 15, bottom: 10))
+                        margin: const EdgeInsets.only(
+                            right: 25, left: 25, top: 15, bottom: 10))
                   ],
                 ),
-            )
+              )
             : Container(),
       ),
     );

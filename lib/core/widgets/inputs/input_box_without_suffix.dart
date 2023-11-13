@@ -8,6 +8,7 @@ class InputBoxWithoutSuffix extends StatelessWidget {
   final TextInputType? keyboardType;
   final Function(dynamic)? onChanged;
   final List<TextInputFormatter>? inputFormatters;
+  final bool? isSearchable;
 
   const InputBoxWithoutSuffix(
       {required this.label,
@@ -16,6 +17,7 @@ class InputBoxWithoutSuffix extends StatelessWidget {
       this.keyboardType,
       this.onChanged,
       this.inputFormatters,
+      this.isSearchable,
       super.key});
 
   @override
@@ -34,11 +36,21 @@ class InputBoxWithoutSuffix extends StatelessWidget {
           decoration: InputDecoration(
             filled: true,
             fillColor: const Color(0xffF2F2F4),
-            contentPadding: const EdgeInsets.only(top: 42 / 2),
+            contentPadding: EdgeInsets.only(
+                top: 42 / 2, right: isSearchable != null ? 40 : 0),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(50),
               borderSide: BorderSide.none,
             ),
+            prefixIcon: isSearchable != null
+                ? const IntrinsicWidth(
+                    child: Padding(
+                      padding: EdgeInsets.only(left: 20),
+                      child: Icon(Icons.search,
+                          color: Color.fromRGBO(241, 34, 34, 1)),
+                    ),
+                  )
+                : Container(),
             prefixIconConstraints:
                 const BoxConstraints(minWidth: 0, minHeight: 0),
             hintText: label,

@@ -410,7 +410,7 @@ class _HomePageState extends State<HomePage> {
           appBar: _navigationBarPage == 2
               ? buildUserSettingsAppBar()
               : PreferredSize(
-                  preferredSize: const Size.fromHeight(kToolbarHeight),
+                  preferredSize: const Size.fromHeight(45.0),
                   child: AutozoneAppBar(
                     userId: userId,
                     notificationCount: notificationCount,

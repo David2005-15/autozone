@@ -87,8 +87,8 @@ class _ForgotPinPageState extends State<ForgotPinPage> {
         children: [
           Container(
             width: double.infinity,
-            height: MediaQuery.of(context).size.height * 0.2,
-            margin: const EdgeInsets.all(10),
+            // height: MediaQuery.of(context).size.height * 0.2,
+            margin: const EdgeInsets.all(20),
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
                 color: const Color(0xffF2F2F4)),
@@ -96,10 +96,11 @@ class _ForgotPinPageState extends State<ForgotPinPage> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
+                const SizedBox(height: 21),
                 Container(
                   margin: const EdgeInsets.only(left: 5, right: 5),
                   child: const Text(
-                    "Նույնականացման կոդը ուղարկվելու է Ձեր բջջային համարին։",
+                    "Նույնականացման կոդը ուղարկվելու է \n Ձեր բջջային համարին։",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                         fontWeight: FontWeight.w700,
@@ -107,13 +108,15 @@ class _ForgotPinPageState extends State<ForgotPinPage> {
                         color: Color(0xff164866)),
                   ),
                 ),
+                const SizedBox(height: 21),
                 Text(
                   "0$phoneNumber",
                   style: const TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: 22,
                       color: Color(0xff164866)),
-                )
+                ),
+                const SizedBox(height: 17),
               ],
             ),
           ),
@@ -138,7 +141,8 @@ class _ForgotPinPageState extends State<ForgotPinPage> {
                             builder: (context) => const SMSLimitPage()));
                   });
                 }
-              }, double.infinity, 42, margin: const EdgeInsets.all(10)))
+              }, double.infinity, 42,
+                  margin: const EdgeInsets.symmetric(horizontal: 20)))
         ],
       ),
     );

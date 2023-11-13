@@ -55,7 +55,7 @@ void error(BuildContext context, String autoSerialCode) {
                   height: 12,
                 ),
                 const Text(
-                  "Որոնման արդյունքում նման տվյալներով մեքենա չի գտնվել: Խնդրում ենք ստուգել մուտքագրված տվյալների ճշգրտությունը:",
+                  "Որոնման արդյունքում նման\nտվյալներով մեքենա չի գտնվել:\nԽնդրում ենք ստուգել մուտքագրված\nտվյալների ճշգրտությունը:",
                   textAlign: TextAlign.center,
                   style: TextStyle(
                       fontWeight: FontWeight.w700,

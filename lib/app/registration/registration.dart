@@ -77,7 +77,9 @@ class _RegistrationState extends State<Registration> {
                 child: Stack(
                   children: <Widget>[buildAppLogo(), buildAppLoginSection()],
                 )))
-        : const NoInternetPage(isRegistered: false,);
+        : const NoInternetPage(
+            isRegistered: false,
+          );
   }
 
   Align buildAppLogo() {

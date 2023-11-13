@@ -2,8 +2,8 @@ import 'package:autozone/core/alert_dialogs/report.dart';
 import 'package:autozone/core/factory/button_factory.dart';
 import 'package:flutter/material.dart';
 
-void doorIsOpenDialogAnswer(
-    BuildContext context, String carNumber, VoidCallback onClose, VoidCallback onApprove, int id) {
+void doorIsOpenDialogAnswer(BuildContext context, String carNumber,
+    VoidCallback onClose, VoidCallback onApprove, int id) {
   showDialog(
       context: context,
       builder: (context) {
@@ -18,9 +18,9 @@ void doorIsOpenDialogAnswer(
                 Container(
                   height: 70,
                   alignment: Alignment.center,
-                   decoration: BoxDecoration(
+                  decoration: BoxDecoration(
                     color: const Color(0xffF3F4F6),
-                    borderRadius: BorderRadius.circular(10),
+                    // borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
                     "$carNumber մեքենայի վարորդ, Ձեր մեքենայի պատուհանը բաց է։",
@@ -32,19 +32,24 @@ void doorIsOpenDialogAnswer(
                     ),
                   ),
                 ),
-                SizedBox(height: 20,),
+                SizedBox(
+                  height: 20,
+                ),
                 const Image(
                   image: AssetImage("assets/Message/OpenDoor.png"),
                   width: 200,
                   height: 58,
                 ),
-                SizedBox(height: 20,),
-                ButtonFactory.createButton(
-                    "cta_green", "Շնորհակալություն", () {
-                      onApprove();
-                    }, double.infinity, 42,
+                SizedBox(
+                  height: 20,
+                ),
+                ButtonFactory.createButton("cta_green", "Շնորհակալություն", () {
+                  onApprove();
+                }, double.infinity, 42,
                     margin: const EdgeInsets.only(left: 20, right: 20, top: 5)),
-                SizedBox(height: 30,),
+                SizedBox(
+                  height: 30,
+                ),
                 InkWell(
                   onTap: () {
                     Navigator.pop(context);
@@ -65,7 +70,9 @@ void doorIsOpenDialogAnswer(
                             width: 16,
                             height: 16,
                           ),
-                          SizedBox(width: 5,),
+                          SizedBox(
+                            width: 5,
+                          ),
                           Text(
                             "Դժգոհել",
                             style: TextStyle(

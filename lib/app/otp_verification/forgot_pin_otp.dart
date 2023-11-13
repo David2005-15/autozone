@@ -61,6 +61,14 @@ class _ForgotPinOtpPage extends State<ForgotPinOtpPage> {
             height: 1.0,
           ),
         ),
+        title: const Text(
+          "Նույնականացման կոդի ստացում",
+          style: TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 15,
+            color: Color(0xff164866),
+          ),
+        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         leadingWidth: 40,

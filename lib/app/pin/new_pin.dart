@@ -27,6 +27,14 @@ class _NewPinPage extends State<NewPinPage> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        title: const Text(
+          "Ստեղծել նոր PIN գաղտնաբառ",
+          style: TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 15,
+            color: Color(0xff164866),
+          ),
+        ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(4.0),
           child: Container(

@@ -1,5 +1,6 @@
 import 'package:autozone/core/factory/button_factory.dart';
 import 'package:autozone/core/factory/message_factory.dart';
+import 'package:autozone/core/widgets/inputs/input_box.dart';
 import 'package:autozone/core/widgets/inputs/input_box_without_suffix.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -191,6 +192,7 @@ class SearchCarPageState extends State<SearchCarPage> {
             Column(
               children: [
                 InputBoxWithoutSuffix(
+                    isSearchable: true,
                     label: "00XX000",
                     inputFormatters: [
                       FilteringTextInputFormatter.deny(RegExp(r'\s')),
@@ -334,7 +336,7 @@ class SearchCarPageState extends State<SearchCarPage> {
                               "${autoNumberController.text.toUpperCase()} մեքենայի վարորդ, Ձեր մեքենան փակել է իմ մեքենայի ճանապարհը։");
                         });
                       }),
-                      SizedBox(
+                      const SizedBox(
                         width: 5,
                       ),
                       issueContainer(
@@ -391,7 +393,7 @@ class SearchCarPageState extends State<SearchCarPage> {
                               "${autoNumberController.text.toUpperCase()} մեքենայի վարորդ, Ձեր մեքենան վթարվել է։");
                         });
                       }),
-                      SizedBox(
+                      const SizedBox(
                         width: 5,
                       ),
                       issueContainer(
@@ -449,7 +451,7 @@ class SearchCarPageState extends State<SearchCarPage> {
                               "${autoNumberController.text.toUpperCase()} մեքենայի վարորդ, Ձեր մեքենան էվակուացնում են։");
                         });
                       }),
-                      SizedBox(
+                      const SizedBox(
                         width: 5,
                       ),
                       issueContainer("assets/Message/CarNumber.png", "Գտել եմ",
@@ -506,7 +508,7 @@ class SearchCarPageState extends State<SearchCarPage> {
                               "${autoNumberController.text.toUpperCase()} մեքենայի վարորդ, Ձեր մեքենան փակել է իմ մեքենայի ճանապարհը։");
                         });
                       }),
-                      SizedBox(
+                      const SizedBox(
                         width: 5,
                       ),
                       issueContainer("assets/Message/CarHit.png", "Վնասել են",

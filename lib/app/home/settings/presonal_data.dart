@@ -115,18 +115,27 @@ class _PersonalDataState extends State<PersonalData> {
             ),
             buildPersonalFullNameTile(name, "assets/Settings/ProfileIcon.png",
                 "Անուն Ազգանուն", isEdit),
+            const SizedBox(
+              height: 4,
+            ),
             line(),
             const SizedBox(
-              height: 15,
+              height: 9,
             ),
             buildPersonalDataTile(phone.replaceFirst("374", "0"),
                 "assets/Settings/PhoneNumber.png", "Հեռախոսահամար"),
+            const SizedBox(
+              height: 4,
+            ),
             line(),
             const SizedBox(
-              height: 15,
+              height: 9,
             ),
             buildPersonalDataTileEmail(
                 email, "assets/Settings/Email.png", isEdit),
+            const SizedBox(
+              height: 4,
+            ),
             line(),
             const SizedBox(
               height: 20,

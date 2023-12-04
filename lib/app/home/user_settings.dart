@@ -3,10 +3,12 @@ import 'dart:io';
 import 'package:autozone/app/home/settings/presonal_data.dart';
 import 'package:autozone/app/home/settings/my_cars.dart';
 import 'package:autozone/app/home/settings/privacy_policy.dart';
+import 'package:autozone/utils/image_cache.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 
 class UserSettings extends StatefulWidget {
   final String name;
@@ -28,8 +30,12 @@ class UserSettings extends StatefulWidget {
 
 class _UserSettingsState extends State<UserSettings> {
   XFile? _image;
+  ImageCacheManager imageManager = ImageCacheManager();
 
   Future getUserImage() async {
+    // var prefs = await SharedPreferences.getInstance();
+
+    // imagePath = prefs.getString("imagePath");
     Dio dio = Dio();
     var prefs = await SharedPreferences.getInstance();
 
@@ -54,11 +60,12 @@ class _UserSettingsState extends State<UserSettings> {
 
   @override
   void initState() {
+    getUserImage();
     super.initState();
+
     setState(() {
       name = widget.name;
     });
-    getUserImage();
   }
 
   Future updateImage() async {
@@ -100,12 +107,13 @@ class _UserSettingsState extends State<UserSettings> {
         ));
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
       height: double.infinity,
-      color: Colors.white,
+      color: const Color(0xffFCFCFC),
       padding: const EdgeInsets.only(top: 10, right: 11, left: 11),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,

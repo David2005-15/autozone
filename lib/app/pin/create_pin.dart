@@ -26,18 +26,6 @@ class _CreatePinState extends State<CreatePin> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(4.0),
-          child: Container(
-            color: Colors.grey[100],
-            height: 1.0,
-          ),
-        ),
-        iconTheme: const IconThemeData(color: Colors.white),
-        elevation: 0,
-        backgroundColor: Colors.white,
-      ),
       body: Container(
           width: double.infinity,
           height: double.infinity,

@@ -44,13 +44,19 @@ void showMapDialog(
                             color: Color(0xff164866),
                           ),
                         ),
-                        SizedBox(width: 5,),
-                        Text(
-                          address,
-                          style: const TextStyle(
-                            color: Color(0xff164866),
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
+                        const SizedBox(width: 5,),
+                        FittedBox(
+                          fit: BoxFit.contain,
+                          child: Container(
+                            width: MediaQuery.of(context).size.width * 0.6,
+                            child: Text(
+                              address,
+                              style: const TextStyle(
+                                color: Color(0xff164866),
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
                           ),
                         ),
                       ],
@@ -58,24 +64,6 @@ void showMapDialog(
                   ),
                   const SizedBox(
                     width: 10,
-                  ),
-                  Container(
-                    width: 30,
-                    height: 30,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                        color: const Color(0xff164866),
-                        borderRadius: BorderRadius.circular(3)),
-                    child: IconButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      icon: const Icon(
-                        Icons.close,
-                        color: Colors.white,
-                        size: 15,
-                      ),
-                    ),
                   ),
                 ],
               ),
@@ -109,7 +97,7 @@ void showMapDialog(
                         height: 40,
                         // width: 220,
                         decoration: BoxDecoration(
-                          color: const Color(0xffF2F2F4),
+                          color: Colors.white,
                           borderRadius: BorderRadius.circular(6),
                           border: Border.all(
                             color: Colors.grey[300]!,
@@ -145,11 +133,11 @@ void showMapDialog(
                           }
                         },
                         child: Container(
-                          margin: const EdgeInsets.only(bottom: 70, right: 20),
+                          margin: const EdgeInsets.only(bottom: 70, right: 13),
                           width: 76,
                           height: 45,
                           decoration: BoxDecoration(
-                            color: Colors.green,
+                            color: const Color(0xff007200),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: const Center(

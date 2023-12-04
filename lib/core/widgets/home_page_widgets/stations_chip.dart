@@ -24,43 +24,94 @@ class StationsChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 150,
+      height: 165,
       width: double.infinity,
-      margin: const EdgeInsets.only(left: 10, right: 10, top: 10),
+      margin: const EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 10),
       decoration: const BoxDecoration(
         color: Color(0xffF3F4F6),
       ),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          InkWell(
-            onTap: () {
-              onChanged(!checked);
-            },
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 8, left: 8, bottom: 2),
-                  child: Container(
-                    // width: MediaQuery.of(context).size.width * 0.7,
-                    child: Text(
-                      name ?? "",
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 15,
-                        color: Color(0xff164866),
+          Container(
+            margin: const EdgeInsets.only(left: 5, right: 15, top: 10, bottom: 10),
+            alignment: Alignment.center,
+            child: InkWell(
+              onTap: () {
+                onChanged(!checked);
+              },
+              child: Center(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8, bottom: 1),
+                          child: Container(
+                            child: Text(
+                              name ?? "",
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 13.5,
+                                color: Color(0xff164866),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Container(
+                      width: 23,
+                      height: 23,
+                      child: InkWell(
+                        onTap: () {
+                          onChanged(!checked);
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: checked
+                                ? const Color(0xff447B18)
+                                : Colors.transparent,
+                            border: Border.all(
+                              color: checked ? Colors.transparent: Color(0xffD7D7D7),
+                              width: 2,
+                            ),
+                            borderRadius:
+                                BorderRadius.circular(4), // Set the border radius
+                          ),
+                          width: 18,
+                          height: 18,
+                          child: checked
+                              ? const Padding(
+                                padding: EdgeInsets.all(4),
+                                child: Image(
+                                    image: AssetImage("assets/Settings/CheckIcon.png"),
+                                    width: 14.0,
+                                    height: 14,
+                                    color: Colors.white,
+                                  ),
+                              )
+                              : null,
+                        ),
                       ),
                     ),
-                  ),
+                    // Theme(
+                    //   data: ThemeData(
+                    //     unselectedWidgetColor: const Color(0xffD7D7D7),
+                    //   ),
+                    //   child: Checkbox(
+                    //     value: checked,
+                    //     onChanged: onChanged,
+                    //     checkColor: Colors.white,
+                    //     activeColor: const Color(0xff447B18),
+                    //   ),
+                    // )
+                  ],
                 ),
-                Checkbox(
-                  value: checked,
-                  onChanged: onChanged,
-                  checkColor: Colors.white,
-                  activeColor: const Color(0xff447B18),
-                )
-              ],
+              ),
             ),
           ),
           InkWell(
@@ -73,7 +124,7 @@ class StationsChip extends StatelessWidget {
                 color: Colors.white,
                 margin: const EdgeInsets.only(left: 5, right: 5),
                 child: Padding(
-                  padding: const EdgeInsets.only(left: 8, right: 8),
+                  padding: const EdgeInsets.only(left: 5, right: 5),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -84,41 +135,31 @@ class StationsChip extends StatelessWidget {
                           FittedBox(
                             fit: BoxFit.contain,
                             child: Container(
-                              width: MediaQuery.of(context).size.width * 0.7,
-                              child: Text(
-                                address ?? "",
+                              // width: MediaQuery.of(context).size.width * 0.8,
+                              child: Text(address ?? "",
                                   textAlign: TextAlign.left,
-                                  overflow: TextOverflow.visible,
                                   style: const TextStyle(
                                     fontWeight: FontWeight.w700,
-                                    fontSize: 12,
+                                    fontSize: 13.5,
                                     color: Color(0xff164866),
                                   )),
                             ),
                           ),
                           const SizedBox(
-                            height: 5,
+                            height: 12,
                           ),
                           Row(
                             children: [
-                              const Image(
-                                image: AssetImage("assets/WorkHours.png"),
-                                width: 15,
-                                height: 15,
-                              ),
-                              const SizedBox(
-                                width: 5,
-                              ),
                               FittedBox(
                                 fit: BoxFit.contain,
                                 child: Container(
-                                  width: MediaQuery.of(context).size.width * 0.65,
+                                  // width: MediaQuery.of(context).size.width * 0.8,
                                   child: Text(workingTime ?? "",
                                       textAlign: TextAlign.left,
-                                      overflow: TextOverflow.ellipsis,
+                                      overflow: TextOverflow.visible,
                                       style: const TextStyle(
                                         fontWeight: FontWeight.w700,
-                                        fontSize: 12,
+                                        fontSize: 13.5,
                                         color: Color(0xff164866),
                                       )),
                                 ),
@@ -133,16 +174,18 @@ class StationsChip extends StatelessWidget {
                 )),
           ),
           Container(
-            height: 30,
+            height: 45,
             alignment: Alignment.center,
             child: InkWell(
               splashColor: Colors.transparent,
               highlightColor: Colors.transparent,
               onTap: () {
-                showMapDialog(context, latitude, longtitude, address ?? "", name ?? "");
+                showMapDialog(
+                    context, latitude, longtitude, address ?? "", name ?? "");
               },
               child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
                   Image(
                     image: AssetImage("assets/Map.png"),
@@ -155,9 +198,9 @@ class StationsChip extends StatelessWidget {
                   Text("Դիրքը քարտեզի վրա",
                       style: TextStyle(
                         fontWeight: FontWeight.w700,
-                        fontSize: 15,
+                        fontSize: 13.5,
                         color: Color(0xff164866),
-                      ))
+                      )),
                 ],
               ),
             ),

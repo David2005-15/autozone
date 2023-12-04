@@ -29,21 +29,21 @@ void car_found(BuildContext context, String? autoMark, String? autoNumber,
                   children: <Widget>[
                     InkWell(
                       onTap: () {
-                        Navigator.pop(context);
+                        // Navigator.pop(context);
                       },
                       child: Container(
                         width: 22,
                         height: 22,
                         margin: const EdgeInsets.only(right: 10, top: 10),
                         decoration: BoxDecoration(
-                          color: const Color(0xff164866),
+                          color: Colors.transparent,
                           borderRadius: BorderRadius.circular(5),
                         ),
                         alignment: Alignment.center,
                         child: const Icon(
                           Icons.close,
                           size: 15,
-                          color: Colors.white,
+                          color: Colors.transparent,
                         ),
                       ),
                     )
@@ -65,18 +65,6 @@ void car_found(BuildContext context, String? autoMark, String? autoNumber,
                             color: Color(0xff164866)),
                       ),
                     ),
-                    // const SizedBox(width: 30,),
-                    // FittedBox(
-                    //   fit: BoxFit.contain,
-                    //   child: Text(
-                    //     autoNumber ?? 'No Data',
-                    //     style: const TextStyle(
-                    //         fontSize: 20,
-                    //         fontWeight: FontWeight.w700,
-                    //         color: Color(0xff164866)),
-                    //   ),
-                    // ),
-                    // SizedBox(width: 50,)
                   ],
                 ),
                 ButtonFactory.createButton("cta_green", "Հաստատել", () async {

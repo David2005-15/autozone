@@ -7,6 +7,7 @@ class GreenCta extends StatelessWidget{
   final String text;
   final EdgeInsetsGeometry? margin;
 
+
   const GreenCta({
     required this.height,
     required this.width,
@@ -37,7 +38,7 @@ class GreenCta extends StatelessWidget{
           text,
           style: const TextStyle(
             fontWeight: FontWeight.w700,
-            fontSize: 15
+            fontSize: 14
           ),
         ),
       ),

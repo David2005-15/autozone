@@ -1,8 +1,11 @@
+import 'dart:math';
+
 import 'package:autozone/app/home/home_page.dart';
 import 'package:autozone/app/registration/registration.dart';
 import 'package:autozone/domain/dependency_injection.dart';
 import 'package:autozone/firebase_options.dart';
 import 'package:autozone/utils/service_provider.dart';
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -13,7 +16,34 @@ import 'package:shared_preferences/shared_preferences.dart';
 var firebaseMessaging = FirebaseMessaging.instance;
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  print("Handling a background message: ${message.messageId}");
+  await AwesomeNotifications().initialize(
+      null, //'resource://drawable/res_app_icon',//
+      [
+        NotificationChannel(
+            channelKey: 'alerts',
+            channelName: 'Alerts',
+            channelDescription: 'Notification tests as alerts',
+            playSound: true,
+            onlyAlertOnce: true,
+            groupAlertBehavior: GroupAlertBehavior.Children,
+            importance: NotificationImportance.High,
+            defaultPrivacy: NotificationPrivacy.Private)
+      ],
+      debug: true);
+
+  bool isAllowed = await AwesomeNotifications().isNotificationAllowed();
+
+  if (!isAllowed) return;
+
+  int randomNumber = Random().nextInt(100);
+
+  await AwesomeNotifications().createNotification(
+      content: NotificationContent(
+          id: randomNumber,
+          channelKey: 'alerts',
+          title: message.notification!.title,
+          body: message.notification!.body,
+          payload: {"id": message.data["id"]}));
 }
 
 void main() async {

@@ -64,7 +64,7 @@ class _MyCarsPageState extends State<MyCarsPage> {
           ),
           actions: <Widget>[
             Container(
-                margin: const EdgeInsets.only(left: 25),
+                // margin: const EdgeInsets.only(left: 25),
                 child: InkWell(
                     highlightColor: Colors.transparent,
                     splashColor: Colors.transparent,
@@ -80,7 +80,7 @@ class _MyCarsPageState extends State<MyCarsPage> {
                       height: 21,
                     ))),
             const SizedBox(
-              width: 30,
+              width: 16,
             )
           ],
           iconTheme: const IconThemeData(color: Color(0xff164866)),
@@ -113,7 +113,7 @@ class _MyCarsPageState extends State<MyCarsPage> {
               : !isInitialRequest
                   ? const Center(
                       child: Text(
-                        "Ավելցված մեքենաներ չունեք",
+                        "Ավելացված մեքենաներ չունեք",
                         style: TextStyle(
                             fontWeight: FontWeight.w700,
                             color: Color(0xff164866),
@@ -155,10 +155,12 @@ class _MyCarsPageState extends State<MyCarsPage> {
                   width: 50,
                   height: 50,
                   decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(6),
-                      color: const Color(0xffF2F2F4)
-                      // color: Colors.yellow
-                      ),
+                    borderRadius: BorderRadius.circular(6),
+                    color: Colors.white,
+                    border:
+                        Border.all(color: const Color(0xffF2F2F4), width: 2),
+                    // color: Colors.yellow
+                  ),
                   child: const Image(
                     image: AssetImage("assets/Settings/Auto.png"),
                     width: 22,
@@ -219,8 +221,8 @@ class _MyCarsPageState extends State<MyCarsPage> {
                   },
                   child: const Image(
                     image: AssetImage("assets/Settings/Edit.png"),
-                    width: 24,
-                    height: 24,
+                    width: 20,
+                    height: 20,
                   ),
                 )
               : Container(),
@@ -273,7 +275,11 @@ class _MyCarsPageState extends State<MyCarsPage> {
             ));
 
     setState(() {
-      cars = result.data["User"]["Cars"];
+      if (result.data["User"] != null) {
+        cars = result.data["User"]["Cars"];
+      } else {
+        cars = [];
+      }
       isInitialRequest = false;
     });
 
@@ -303,21 +309,21 @@ class _MyCarsPageState extends State<MyCarsPage> {
                   alignment: Alignment.topRight,
                   child: InkWell(
                     onTap: () {
-                      Navigator.pop(context);
+                      // Navigator.pop(context);
                     },
                     child: Container(
                       width: 22,
                       height: 22,
                       margin: const EdgeInsets.only(right: 10, top: 10),
                       decoration: BoxDecoration(
-                        color: const Color(0xff164866),
+                        color: Colors.transparent,
                         borderRadius: BorderRadius.circular(5),
                       ),
                       alignment: Alignment.center,
                       child: const Icon(
                         Icons.close,
                         size: 15,
-                        color: Colors.white,
+                        color: Colors.transparent,
                       ),
                     ),
                   ),

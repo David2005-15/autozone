@@ -1,4 +1,3 @@
-import 'package:autozone/core/alert_dialogs/report.dart';
 import 'package:autozone/core/factory/button_factory.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +12,8 @@ void carNumberAnswer(
     String phoneNumber,
     int id,
     DataSnapshot snapshot,
-    String key) async {
+    String key,
+    Function(int) onReport) async {
   bool needToChange = false;
   var numberController = TextEditingController();
 
@@ -23,9 +23,11 @@ void carNumberAnswer(
 
   var phone = prefs.getString("phone") ?? "";
 
-  print(phone);
+  if (phone[0] != "0" && phone.length != 9) {
+    phone = "0$phone";
+  }
 
-  phoneNumber = "0$phoneNumber";
+  phone = phone.substring(1);
 
   Future.delayed(Duration.zero, () {
     showDialog(
@@ -43,10 +45,11 @@ void carNumberAnswer(
                     Container(
                       height: 70,
                       alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: const Color(0xffF3F4F6),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
+                      decoration: const BoxDecoration(
+                          color: Color(0xffF3F4F6),
+                          borderRadius: BorderRadius.only(
+                              topRight: Radius.circular(5),
+                              topLeft: Radius.circular(5))),
                       child: Text(
                         "$carNumber մեքենայի վարորդ, գտել եմ Ձեր մեքենայի համարանիշը։",
                         textAlign: TextAlign.center,
@@ -57,21 +60,30 @@ void carNumberAnswer(
                         ),
                       ),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 20,
                     ),
-                    const Image(
-                      image: AssetImage("assets/Message/CarNumber.png"),
+                    const Padding(
+                      padding: EdgeInsets.only(right: 8.0, left: 8),
+                      child: Image(
+                        image: AssetImage("assets/Message/9.png"),
+                      ),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 20,
                     ),
                     ButtonFactory.createButton(
-                        "cta_green", "Տրամադրել հեռախոսահամար", () {
-                      snapshot.ref
-                          .update({"$key/phoneNumber": "0$phone"});
-                      onApprove(phone);
-                    }, double.infinity, 42,
+                        "cta_green",
+                        "Տրամադրել հեռախոսահամար",
+                        !needToChange
+                            ? () {
+                                snapshot.ref
+                                    .update({"$key/phoneNumber": "0$phone"});
+                                onApprove(phone);
+                              }
+                            : null,
+                        double.infinity,
+                        42,
                         margin:
                             const EdgeInsets.only(left: 20, right: 20, top: 5)),
                     const SizedBox(
@@ -82,7 +94,7 @@ void carNumberAnswer(
                       children: [
                         needToChange == false
                             ? Text(
-                                "0$phone",
+                                phone,
                                 style: const TextStyle(
                                   fontWeight: FontWeight.w700,
                                   fontSize: 18,
@@ -94,6 +106,11 @@ void carNumberAnswer(
                                 height: 30,
                                 child: TextField(
                                   controller: numberController,
+                                  onChanged: (val) {
+                                    state(() {
+                                      phone = val;
+                                    });
+                                  },
                                   inputFormatters: [
                                     LengthLimitingTextInputFormatter(9)
                                   ],
@@ -104,11 +121,11 @@ void carNumberAnswer(
                                     fontSize: 18,
                                     color: Color(0xff164866),
                                   ),
-                                  decoration:
-                                      InputDecoration(border: InputBorder.none),
+                                  decoration: const InputDecoration(
+                                      border: InputBorder.none),
                                 ),
                               ),
-                        SizedBox(
+                        const SizedBox(
                           width: 10,
                         ),
                         InkWell(
@@ -123,16 +140,24 @@ void carNumberAnswer(
 
                                 if (numberController.text != "0$phone" ||
                                     numberController.text != "") {
-                                  phoneNumber = numberController.text;
+                                  phone = numberController.text;
                                 }
                               }
                             });
                           },
-                          child: const Image(
-                            image: AssetImage("assets/Settings/Edit.png"),
-                            width: 22,
-                            height: 22,
-                          ),
+                          child: !needToChange
+                              ? const Image(
+                                  image: AssetImage("assets/Settings/Edit.png"),
+                                  width: 22,
+                                  height: 22,
+                                )
+                              : const Image(
+                                  image: AssetImage(
+                                      "assets/Settings/CheckIcon.png"),
+                                  width: 22,
+                                  height: 22,
+                                  color: Color(0xff164866),
+                                ),
                         )
                       ],
                     ),
@@ -154,7 +179,13 @@ void carNumberAnswer(
                     InkWell(
                       onTap: () {
                         Navigator.pop(context);
-                        showReportDialog(context, id);
+                        onReport(id);
+                        // showReportDialog(context, id, onApprove: () {
+                        //   success(context, "Հաղորդագրությունն\nուղարկված է");
+                        //   Future.delayed(Duration(seconds: 1), () {
+                        //     Navigator.pop(context);
+                        //   });
+                        // });
                       },
                       child: Container(
                           height: 27,

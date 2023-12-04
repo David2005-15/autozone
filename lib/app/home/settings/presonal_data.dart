@@ -30,6 +30,8 @@ class _PersonalDataState extends State<PersonalData> {
 
   bool isEdit = false;
 
+  bool isValidEmail = false;
+
   @override
   void initState() {
     var request = getUserData();
@@ -39,12 +41,21 @@ class _PersonalDataState extends State<PersonalData> {
       nameController.text = name;
     });
 
+    emailController.addListener(() {
+      setState(() {
+        isValidEmail = RegExp(
+                r"^[a-zA-Z0-9.a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$")
+            .hasMatch(emailController.text);
+      });
+    });
+
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: Colors.white,
       appBar: AppBar(
         bottom: PreferredSize(
@@ -98,7 +109,7 @@ class _PersonalDataState extends State<PersonalData> {
                     height: 21)),
           ),
           const SizedBox(
-            width: 30,
+            width: 16,
           )
         ],
         iconTheme: const IconThemeData(color: Color(0xff164866)),
@@ -107,61 +118,64 @@ class _PersonalDataState extends State<PersonalData> {
         width: double.infinity,
         height: double.infinity,
         color: Colors.white,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: <Widget>[
-            const SizedBox(
-              height: 10,
-            ),
-            buildPersonalFullNameTile(name, "assets/Settings/ProfileIcon.png",
-                "Անուն Ազգանուն", isEdit),
-            const SizedBox(
-              height: 4,
-            ),
-            line(),
-            const SizedBox(
-              height: 9,
-            ),
-            buildPersonalDataTile(phone.replaceFirst("374", "0"),
-                "assets/Settings/PhoneNumber.png", "Հեռախոսահամար"),
-            const SizedBox(
-              height: 4,
-            ),
-            line(),
-            const SizedBox(
-              height: 9,
-            ),
-            buildPersonalDataTileEmail(
-                email, "assets/Settings/Email.png", isEdit),
-            const SizedBox(
-              height: 4,
-            ),
-            line(),
-            const SizedBox(
-              height: 20,
-            ),
-            Visibility(
-              visible: isEdit,
-              child: ButtonFactory.createButton(
-                  "cta_green",
-                  "Պահպանել",
-                  nameController.text.isEmpty || emailController.text.isEmpty
-                      ? null
-                      : () async {
-                          await updateEmail(
-                              emailController.text, nameController.text);
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: <Widget>[
+              const SizedBox(
+                height: 10,
+              ),
+              buildPersonalFullNameTile(name, "assets/Settings/ProfileIcon.png",
+                  "Անուն Ազգանուն", isEdit),
+              const SizedBox(
+                height: 4,
+              ),
+              line(),
+              const SizedBox(
+                height: 9,
+              ),
+              buildPersonalDataTile(phone.replaceFirst("374", "0"),
+                  "assets/Settings/PhoneNumber.png", "Հեռախոսահամար"),
+              const SizedBox(
+                height: 4,
+              ),
+              line(),
+              const SizedBox(
+                height: 9,
+              ),
+              buildPersonalDataTileEmail(
+                  email, "assets/Settings/Email.png", isEdit),
+              const SizedBox(
+                height: 4,
+              ),
+              line(),
+              const SizedBox(
+                height: 20,
+              ),
+              Visibility(
+                visible: isEdit,
+                child: ButtonFactory.createButton(
+                    "cta_green",
+                    "Պահպանել",
+                    nameController.text.isEmpty || emailController.text.isEmpty || !isValidEmail
+                        ? null
+                        : () async {
+                            await updateEmail(
+                                emailController.text, nameController.text);
 
-                          setState(() {
-                            isEdit = false;
-                          });
+                            setState(() {
+                              isEdit = false;
+                            });
 
-                          getUserData();
-                        },
-                  double.infinity,
-                  42,
-                  margin: const EdgeInsets.only(right: 68, left: 68, top: 57)),
-            )
-          ],
+                            getUserData();
+                          },
+                    double.infinity,
+                    42,
+                    margin:
+                        const EdgeInsets.only(right: 68, left: 68, top: 37)),
+              )
+            ],
+          ),
         ),
       ),
     );
@@ -195,7 +209,9 @@ class _PersonalDataState extends State<PersonalData> {
                 padding: const EdgeInsets.only(
                     left: 12, right: 12, top: 12, bottom: 12),
                 decoration: BoxDecoration(
-                    color: const Color(0xffF2F2F4),
+                    color: Colors.white,
+                    border:
+                        Border.all(color: const Color(0xffF2F2F4), width: 2),
                     borderRadius: BorderRadius.circular(6)),
                 child: Image(
                   image: AssetImage(path),
@@ -243,7 +259,10 @@ class _PersonalDataState extends State<PersonalData> {
                 padding: const EdgeInsets.only(
                     left: 12, right: 12, top: 12, bottom: 12),
                 decoration: BoxDecoration(
-                    color: const Color(0xffF2F2F4),
+                    // color: const Color(0xffF2F2F4),
+                    color: Colors.white,
+                    border:
+                        Border.all(color: const Color(0xffF2F2F4), width: 2),
                     borderRadius: BorderRadius.circular(6)),
                 child: Image(
                   image: AssetImage(path),
@@ -305,7 +324,9 @@ class _PersonalDataState extends State<PersonalData> {
                 padding: const EdgeInsets.only(
                     left: 12, right: 12, top: 12, bottom: 12),
                 decoration: BoxDecoration(
-                    color: const Color(0xffF2F2F4),
+                    color: Colors.white,
+                    border:
+                        Border.all(color: const Color(0xffF2F2F4), width: 2),
                     borderRadius: BorderRadius.circular(6)),
                 child: Image(
                   image: AssetImage(path),
@@ -375,16 +396,31 @@ class _PersonalDataState extends State<PersonalData> {
 
     Future.delayed(Duration.zero, () {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
           backgroundColor: Colors.transparent,
           elevation: 0,
+          duration: const Duration(seconds: 1),
           content: Center(
+              child: Container(
+            width: double.infinity,
+            height: 42,
+            margin: EdgeInsets.only(
+              right: 68,
+              left: 68,
+            ),
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(25),
+                color: Color(0xffF3F4F6)),
+            child: const Center(
               child: Text(
-            'Data updated successfully',
-            style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: Color(0xff164866)),
+                'Պահպանված է',
+                style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xff164866)),
+              ),
+            ),
           )),
         ),
       );

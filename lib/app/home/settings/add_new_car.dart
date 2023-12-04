@@ -101,7 +101,7 @@ class _AddNewCarPageState extends State<AddNewCarPage> {
   Container buildSearchSection() {
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.only(top: 20),
+      margin: const EdgeInsets.only(top: 40),
       decoration: const BoxDecoration(color: Colors.white),
       child: Column(
         children: <Widget>[
@@ -114,7 +114,7 @@ class _AddNewCarPageState extends State<AddNewCarPage> {
             ),
           ),
           const SizedBox(
-            height: 45,
+            height: 25,
           ),
           SuffixInput(
               controller: _carNumberController,

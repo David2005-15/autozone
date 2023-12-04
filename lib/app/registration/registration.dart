@@ -87,7 +87,7 @@ class _RegistrationState extends State<Registration> {
       alignment: Alignment.topCenter,
       child: Container(
           margin: const EdgeInsets.only(top: 100),
-          child: const Image(image: AssetImage("assets/Logo.png"))),
+          child: const Image(image: AssetImage("assets/Settings/Logo2.png"), width: 171, height: 40,)),
     );
   }
 

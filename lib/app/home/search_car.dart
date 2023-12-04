@@ -1,6 +1,8 @@
+import 'package:autozone/core/alert_dialogs/error_alert.dart';
+import 'package:autozone/core/alert_dialogs/fail.dart';
+import 'package:autozone/core/alert_dialogs/success.dart';
 import 'package:autozone/core/factory/button_factory.dart';
 import 'package:autozone/core/factory/message_factory.dart';
-import 'package:autozone/core/widgets/inputs/input_box.dart';
 import 'package:autozone/core/widgets/inputs/input_box_without_suffix.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -54,6 +56,12 @@ class SearchCarPageState extends State<SearchCarPage> {
     });
   }
 
+  void setTodayDate() async {
+    var prefs = await SharedPreferences.getInstance();
+
+    prefs.setString("today", DateTime.now().toIso8601String());
+  }
+
   int count = 0;
 
   void setTotalCount() async {
@@ -71,6 +79,7 @@ class SearchCarPageState extends State<SearchCarPage> {
   void initState() {
     super.initState();
     setTotalCount();
+    setTodayDate();
     var database = initFirebaseApp();
     var messaging = initFirebaseMessaging();
     getPhoneNumber();
@@ -88,14 +97,15 @@ class SearchCarPageState extends State<SearchCarPage> {
                 ? Container(
                     width: double.infinity,
                     height: double.infinity,
-                    color: Colors.white,
+                    color: const Color(0xffFCFCFC),
+                    margin: const EdgeInsets.only(right: 5, left: 5),
                     alignment: Alignment.center,
                     child: Text(
                       "${autoNumberController.text} մեքենայի տվյալները դեռևս անհասանելի են",
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                           fontWeight: FontWeight.w700,
-                          fontSize: 18,
+                          fontSize: 15,
                           color: Color(0xff164866)),
                     ),
                   )
@@ -118,7 +128,7 @@ class SearchCarPageState extends State<SearchCarPage> {
                           height: 50,
                         ),
                         Container(
-                          margin: const EdgeInsets.only(left: 40, right: 40),
+                          margin: const EdgeInsets.only(left: 20, right: 20),
                           child: const Text(
                             "Փնտրիր մեքենան և վարորդին ուղարկիր ծանուցում",
                             textAlign: TextAlign.center,
@@ -150,6 +160,7 @@ class SearchCarPageState extends State<SearchCarPage> {
       return Container(
         width: double.infinity,
         height: double.infinity,
+        color: const Color(0xffFCFCFC),
         alignment: Alignment.center,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -229,7 +240,7 @@ class SearchCarPageState extends State<SearchCarPage> {
                               isIssueListClicked = false;
                             });
 
-                            Future.delayed(const Duration(seconds: 3), () {
+                            Future.delayed(const Duration(seconds: 2), () {
                               resetState();
                             });
                           } else {
@@ -264,14 +275,15 @@ class SearchCarPageState extends State<SearchCarPage> {
 
   Widget getIssueListInColumn() {
     return Container(
-      margin: const EdgeInsets.only(left: 15, right: 15),
+      padding: const EdgeInsets.only(left: 15, right: 15),
+      color: const Color(0xffFCFCFC),
       child: Column(
         children: <Widget>[
           const SizedBox(
-            height: 5,
+            height: 10,
           ),
           Container(
-            height: 62,
+            height: 50,
             decoration: BoxDecoration(
                 color: const Color(0xffF2F2F4),
                 borderRadius: BorderRadius.circular(6)),
@@ -282,7 +294,7 @@ class SearchCarPageState extends State<SearchCarPage> {
                   mark,
                   style: const TextStyle(
                       fontWeight: FontWeight.w700,
-                      fontSize: 24,
+                      fontSize: 22,
                       color: Color(0xff164866)),
                 ),
                 Container(
@@ -297,7 +309,7 @@ class SearchCarPageState extends State<SearchCarPage> {
                   autoNumberController.text,
                   style: const TextStyle(
                       fontWeight: FontWeight.w700,
-                      fontSize: 24,
+                      fontSize: 22,
                       color: Color(0xff164866)),
                 )
               ],
@@ -318,6 +330,23 @@ class SearchCarPageState extends State<SearchCarPage> {
                         MessageFactory.getMessage(
                             "disturb", context, autoNumberController.text,
                             () async {
+                          var prefs = await SharedPreferences.getInstance();
+
+                          int? count;
+
+                          if (prefs.getInt("count") == null) {
+                            count = 0;
+                            prefs.setInt("count", count);
+                          } else {
+                            count = prefs.getInt("count");
+                          }
+
+                          if (count == 2) {
+                            fail(context,
+                                "Դուք կարող եք օրեկան ուղարկել առավելագույնը 2 ծանուցում");
+                            return;
+                          }
+
                           await database
                               .child("messages")
                               .child("message${const Uuid().v4()}")
@@ -328,11 +357,21 @@ class SearchCarPageState extends State<SearchCarPage> {
                             "car_number": autoNumberController.text,
                             "answer": "",
                             "date": DateTime.now().toString(),
+                            "answer_date": "",
                             "phoneNumber": phoneNumber,
                             "active": true,
+                            "seenDate": ""
+                          });
+                          success(context, "Հաղորդագրությունն\nուղարկված է");
+
+                          prefs.setInt("count", count! + 1);
+
+                          Future.delayed(const Duration(seconds: 2), () {
+                            Navigator.pop(context);
+                            resetState();
                           });
 
-                          await sendMessage(requestedUserId, "AutoZone",
+                          await sendMessage(requestedUserId, "Խանգարում է",
                               "${autoNumberController.text.toUpperCase()} մեքենայի վարորդ, Ձեր մեքենան փակել է իմ մեքենայի ճանապարհը։");
                         });
                       }),
@@ -344,6 +383,23 @@ class SearchCarPageState extends State<SearchCarPage> {
                         MessageFactory.getMessage(
                             "open_door", context, autoNumberController.text,
                             () async {
+                          var prefs = await SharedPreferences.getInstance();
+
+                          int? count;
+
+                          if (prefs.getInt("count") == null) {
+                            count = 0;
+                            prefs.setInt("count", count);
+                          } else {
+                            count = prefs.getInt("count");
+                          }
+
+                          if (count == 2) {
+                            fail(context,
+                                "Դուք կարող եք օրեկան ուղարկել առավելագույնը 2 ծանուցում");
+                            return;
+                          }
+
                           await database
                               .child("messages")
                               .child("message${const Uuid().v4()}")
@@ -354,11 +410,21 @@ class SearchCarPageState extends State<SearchCarPage> {
                             "car_number": autoNumberController.text,
                             "answer": "",
                             "date": DateTime.now().toString(),
+                            "answer_date": "",
                             "phoneNumber": phoneNumber,
-                            "active": true
+                            "active": true,
+                            "seenDate": ""
+                          });
+                          success(context, "Հաղորդագրությունն\nուղարկված է");
+
+                          prefs.setInt("count", count! + 1);
+
+                          Future.delayed(const Duration(seconds: 2), () {
+                            Navigator.pop(context);
+                            resetState();
                           });
 
-                          await sendMessage(requestedUserId, "AutoZone",
+                          await sendMessage(requestedUserId, "Բաց է պատուհանը",
                               "${autoNumberController.text.toUpperCase()} մեքենայի վարորդ, Ձեր մեքենայի պատուհանը բաց է։");
                         });
                       }),
@@ -375,6 +441,23 @@ class SearchCarPageState extends State<SearchCarPage> {
                         MessageFactory.getMessage(
                             "acident", context, autoNumberController.text,
                             () async {
+                          var prefs = await SharedPreferences.getInstance();
+
+                          int? count;
+
+                          if (prefs.getInt("count") == null) {
+                            count = 0;
+                            prefs.setInt("count", count);
+                          } else {
+                            count = prefs.getInt("count");
+                          }
+
+                          if (count == 2) {
+                            fail(context,
+                                "Դուք կարող եք օրեկան ուղարկել առավելագույնը 2 ծանուցում");
+                            return;
+                          }
+
                           await database
                               .child("messages")
                               .child("message${const Uuid().v4()}")
@@ -385,11 +468,22 @@ class SearchCarPageState extends State<SearchCarPage> {
                             "car_number": autoNumberController.text,
                             "answer": "",
                             "date": DateTime.now().toString(),
+                            "answer_date": "",
                             "phoneNumber": phoneNumber,
-                            "active": true
+                            "active": true,
+                            "seenDate": ""
                           });
 
-                          await sendMessage(requestedUserId, "AutoZone",
+                          success(context, "Հաղորդագրությունն\nուղարկված է");
+
+                          prefs.setInt("count", count! + 1);
+
+                          Future.delayed(const Duration(seconds: 2), () {
+                            Navigator.pop(context);
+                            resetState();
+                          });
+
+                          await sendMessage(requestedUserId, "Վթարվել է",
                               "${autoNumberController.text.toUpperCase()} մեքենայի վարորդ, Ձեր մեքենան վթարվել է։");
                         });
                       }),
@@ -401,6 +495,23 @@ class SearchCarPageState extends State<SearchCarPage> {
                         MessageFactory.getMessage(
                             "light_is_on", context, autoNumberController.text,
                             () async {
+                          var prefs = await SharedPreferences.getInstance();
+
+                          int? count;
+
+                          if (prefs.getInt("count") == null) {
+                            count = 0;
+                            prefs.setInt("count", count);
+                          } else {
+                            count = prefs.getInt("count");
+                          }
+
+                          if (count == 2) {
+                            fail(context,
+                                "Դուք կարող եք օրեկան ուղարկել առավելագույնը 2 ծանուցում");
+                            return;
+                          }
+
                           await database
                               .child("messages")
                               .child("message${const Uuid().v4()}")
@@ -411,11 +522,20 @@ class SearchCarPageState extends State<SearchCarPage> {
                             "car_number": autoNumberController.text,
                             "answer": "",
                             "date": DateTime.now().toString(),
+                            "answer_date": "",
                             "phoneNumber": phoneNumber,
-                            "active": true
+                            "active": true,
+                            "seenDate": ""
                           });
+                          success(context, "Հաղորդագրությունն\nուղարկված է");
 
-                          await sendMessage(requestedUserId, "AutoZone",
+                          prefs.setInt("count", count! + 1);
+
+                          Future.delayed(const Duration(seconds: 2), () {
+                            Navigator.pop(context);
+                            resetState();
+                          });
+                          await sendMessage(requestedUserId, "Միացված են",
                               "${autoNumberController.text.toUpperCase()} մեքենայի վարորդ, Ձեր մեքենայի լուսարձակները միացված են։");
                         });
                       })
@@ -427,12 +547,28 @@ class SearchCarPageState extends State<SearchCarPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      issueContainer(
-                          "assets/Message/Evacuation.png", "Էվակուացնում են",
+                      issueContainer("assets/Message/3.png", "Էվակուացնում են",
                           () {
                         MessageFactory.getMessage(
                             "evacuation", context, autoNumberController.text,
                             () async {
+                          var prefs = await SharedPreferences.getInstance();
+
+                          int? count;
+
+                          if (prefs.getInt("count") == null) {
+                            count = 0;
+                            prefs.setInt("count", count);
+                          } else {
+                            count = prefs.getInt("count");
+                          }
+
+                          if (count == 2) {
+                            fail(context,
+                                "Դուք կարող եք օրեկան ուղարկել առավելագույնը 2 ծանուցում");
+                            return;
+                          }
+
                           await database
                               .child("messages")
                               .child("message${const Uuid().v4()}")
@@ -443,22 +579,48 @@ class SearchCarPageState extends State<SearchCarPage> {
                             "car_number": autoNumberController.text,
                             "answer": "",
                             "date": DateTime.now().toString(),
+                            "answer_date": "",
                             "phoneNumber": phoneNumber,
                             "active": true,
+                            "seenDate": ""
                           });
+                          success(context, "Հաղորդագրությունն\nուղարկված է");
 
-                          await sendMessage(requestedUserId, "AutoZone",
+                          prefs.setInt("count", count! + 1);
+
+                          Future.delayed(const Duration(seconds: 2), () {
+                            Navigator.pop(context);
+                            resetState();
+                          });
+                          await sendMessage(requestedUserId, "Էվակուացնում են",
                               "${autoNumberController.text.toUpperCase()} մեքենայի վարորդ, Ձեր մեքենան էվակուացնում են։");
                         });
                       }),
                       const SizedBox(
                         width: 5,
                       ),
-                      issueContainer("assets/Message/CarNumber.png", "Գտել եմ",
-                          () {
+                      issueContainer("assets/Message/9.png", "Գտել եմ", () {
                         MessageFactory.getMessage(
                             "car_number", context, autoNumberController.text,
                             () async {
+                          var prefs = await SharedPreferences.getInstance();
+
+                          int? count;
+
+                          if (prefs.getInt("count") == null) {
+                            count = 0;
+                            prefs.setInt("count", count);
+                          } else {
+                            count = prefs.getInt("count");
+                          }
+
+                          if (count == 2) {
+                            fail(context,
+                                "Դուք կարող եք օրեկան ուղարկել առավելագույնը 2 ծանուցում");
+                            return;
+                          }
+                          success(context, "Հաղորդագրությունն\nուղարկված է");
+
                           await database
                               .child("messages")
                               .child("message${const Uuid().v4()}")
@@ -469,11 +631,20 @@ class SearchCarPageState extends State<SearchCarPage> {
                             "car_number": autoNumberController.text,
                             "answer": "",
                             "date": DateTime.now().toString(),
+                            "answer_date": "",
                             "phoneNumber": phoneNumber,
                             "active": true,
+                            "seenDate": ""
                           });
 
-                          await sendMessage(requestedUserId, "AutoZone",
+                          prefs.setInt("count", count! + 1);
+
+                          Future.delayed(const Duration(seconds: 2), () {
+                            Navigator.pop(context);
+                            resetState();
+                          });
+
+                          await sendMessage(requestedUserId, "Գտել եմ",
                               "${autoNumberController.text.toUpperCase()} մեքենայի վարորդ, գտել եմ Ձեր մեքենայի համարանիշը։");
                         });
                       })
@@ -485,11 +656,25 @@ class SearchCarPageState extends State<SearchCarPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      issueContainer(
-                          "assets/Message/CarClosedGarageEnterance.png",
-                          "Փակել է", () {
+                      issueContainer("assets/Message/6.png", "Փակել է", () {
                         MessageFactory.getMessage("closed_enterance", context,
                             autoNumberController.text, () async {
+                          var prefs = await SharedPreferences.getInstance();
+
+                          int? count;
+
+                          if (prefs.getInt("count") == null) {
+                            count = 0;
+                            prefs.setInt("count", count);
+                          } else {
+                            count = prefs.getInt("count");
+                          }
+
+                          if (count == 2) {
+                            fail(context,
+                                "Դուք կարող եք օրեկան ուղարկել առավելագույնը 2 ծանուցում");
+                            return;
+                          }
                           await database
                               .child("messages")
                               .child("message${const Uuid().v4()}")
@@ -500,22 +685,48 @@ class SearchCarPageState extends State<SearchCarPage> {
                             "car_number": autoNumberController.text,
                             "answer": "",
                             "date": DateTime.now().toString(),
+                            "answer_date": "",
                             "phoneNumber": phoneNumber,
-                            "active": true
+                            "active": true,
+                            "seenDate": ""
+                          });
+                          success(context, "Հաղորդագրությունն\nուղարկված է");
+
+                          prefs.setInt("count", count! + 1);
+
+                          Future.delayed(const Duration(seconds: 2), () {
+                            Navigator.pop(context);
+                            resetState();
                           });
 
-                          await sendMessage(requestedUserId, "AutoZone",
+                          await sendMessage(requestedUserId, "Փակել է",
                               "${autoNumberController.text.toUpperCase()} մեքենայի վարորդ, Ձեր մեքենան փակել է իմ մեքենայի ճանապարհը։");
                         });
                       }),
                       const SizedBox(
                         width: 5,
                       ),
-                      issueContainer("assets/Message/CarHit.png", "Վնասել են",
-                          () {
+                      issueContainer("assets/Message/7.png", "Վնասել են", () {
                         MessageFactory.getMessage(
                             "car_hit", context, autoNumberController.text,
                             () async {
+                          var prefs = await SharedPreferences.getInstance();
+
+                          int? count;
+
+                          if (prefs.getInt("count") == null) {
+                            count = 0;
+                            prefs.setInt("count", count);
+                          } else {
+                            count = prefs.getInt("count");
+                          }
+
+                          if (count == 2) {
+                            fail(context,
+                                "Դուք կարող եք օրեկան ուղարկել առավելագույնը 2 ծանուցում");
+                            return;
+                          }
+
                           await database
                               .child("messages")
                               .child("message${const Uuid().v4()}")
@@ -526,11 +737,22 @@ class SearchCarPageState extends State<SearchCarPage> {
                             "car_number": autoNumberController.text,
                             "answer": "",
                             "date": DateTime.now().toString(),
+                            "answer_date": "",
                             "phoneNumber": phoneNumber,
-                            "active": true
+                            "active": true,
+                            "seenDate": ""
                           });
 
-                          await sendMessage(requestedUserId, "AutoZone",
+                          success(context, "Հաղորդագրությունն\nուղարկված է");
+
+                          prefs.setInt("count", count! + 1);
+
+                          Future.delayed(const Duration(seconds: 2), () {
+                            Navigator.pop(context);
+                            resetState();
+                          });
+
+                          await sendMessage(requestedUserId, "Վնասել են",
                               "${autoNumberController.text.toUpperCase()} մեքենայի վարորդ, Ձեր մեքենան վնասել են։");
                         });
                       })
@@ -551,14 +773,10 @@ class SearchCarPageState extends State<SearchCarPage> {
       child: InkWell(
         onTap: () async {
           onTap();
-          Future.delayed(const Duration(seconds: 5), () {
-            // Navigator.pop(context);
-            resetState();
-          });
         },
         child: Container(
           width: 175,
-          height: 120,
+          height: 110,
           decoration: BoxDecoration(
             color: const Color(0xffF3F4F6),
             borderRadius: BorderRadius.circular(3),
@@ -568,7 +786,7 @@ class SearchCarPageState extends State<SearchCarPage> {
             children: <Widget>[
               Container(
                 margin: const EdgeInsets.only(top: 5, right: 5, left: 5),
-                height: 80,
+                height: 70,
                 padding: const EdgeInsets.only(right: 10, left: 10),
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -578,14 +796,20 @@ class SearchCarPageState extends State<SearchCarPage> {
                   image: AssetImage(path),
                 ),
               ),
+              const SizedBox(
+                height: 1,
+              ),
               Container(
                 color: const Color(0xffF3F4F6),
-                child: Text(
-                  title,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 15,
-                      color: Color(0xff164866)),
+                child: FittedBox(
+                  fit: BoxFit.contain,
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                        color: Color(0xff164866)),
+                  ),
                 ),
               ),
               const SizedBox(

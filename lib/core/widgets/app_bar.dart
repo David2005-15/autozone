@@ -6,11 +6,13 @@ class AutozoneAppBar extends StatelessWidget {
   final int notificationCount;
   final VoidCallback onLogo;
   final VoidCallback? onNotification;
+  final dynamic dahk;
 
   const AutozoneAppBar(
       {required this.userId,
       required this.notificationCount,
       required this.onLogo,
+      required this.dahk,
       this.onNotification,
       Key? key})
       : super(key: key);
@@ -36,7 +38,7 @@ class AutozoneAppBar extends StatelessWidget {
           onLogo();
         },
         child: const Padding(
-          padding: EdgeInsets.only(left: 15),
+          padding: EdgeInsets.only(left: 14),
           child: Image(
             image: AssetImage("assets/Settings/Logo4x.png"),
             width: 129,
@@ -56,7 +58,7 @@ class AutozoneAppBar extends StatelessWidget {
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => NotificationsPage(userId: userId)));
+                      builder: (context) => NotificationsPage(userId: userId, dahk: dahk,)));
             },
             child: Stack(
               children: [

@@ -22,11 +22,12 @@ class InputBoxWithoutSuffix extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    if(isSearchable != null) {
+      return Container(
         height: 42,
         margin: margin,
         child: TextField(
-          autofillHints: const [],
+          autofillHints: const [AutofillHints.postalCode],
           inputFormatters: inputFormatters ?? [],
           onChanged: onChanged,
           keyboardType: keyboardType ?? TextInputType.visiblePassword,
@@ -57,6 +58,42 @@ class InputBoxWithoutSuffix extends StatelessWidget {
             hintStyle: const TextStyle(
                 fontWeight: FontWeight.w400,
                 fontSize: 18,
+                color: Color(0xffCCCCCC)),
+          ),
+          style: const TextStyle(
+              fontWeight: FontWeight.w700,
+              fontSize: 18,
+              color: Color(0xff164866)),
+          controller: controller,
+        ));
+    }
+
+    return Container(
+        height: 42,
+        margin: margin,
+        child: TextField(
+          autofillHints: const [AutofillHints.postalCode],
+          inputFormatters: inputFormatters ?? [],
+          onChanged: onChanged,
+          keyboardType: keyboardType ?? TextInputType.visiblePassword,
+          autocorrect: false,
+          enableSuggestions: false,
+          textAlign: TextAlign.center,
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: const Color(0xffF2F2F4),
+            contentPadding: const EdgeInsets.only(
+                top: 42 / 2, right: 0),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(50),
+              borderSide: BorderSide.none,
+            ),
+            prefixIconConstraints:
+                const BoxConstraints(minWidth: 0, minHeight: 0),
+            hintText: label,
+            hintStyle: const TextStyle(
+                fontWeight: FontWeight.w400,
+                fontSize: 15,
                 color: Color(0xffCCCCCC)),
           ),
           style: const TextStyle(

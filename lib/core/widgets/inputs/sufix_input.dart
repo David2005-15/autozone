@@ -27,6 +27,7 @@ class SuffixInput extends StatelessWidget {
         margin: margin,
         child: TextField(
           inputFormatters: inputFormatters ?? [],
+          autofillHints: const [AutofillHints.postalCode],
           onChanged: onChanged,
           keyboardType: keyboardType ?? TextInputType.text,
           autocorrect: false,

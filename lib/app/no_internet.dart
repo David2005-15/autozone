@@ -32,15 +32,19 @@ class _NoInternetPageState extends State<NoInternetPage> {
                 height: 150,
               ),
             ),
-            const SizedBox(),
+            const SizedBox(
+              height: 46,
+            ),
             const Text(
               "Ինտերնետ կապը բացակայում է",
               style: TextStyle(
                   fontWeight: FontWeight.w700,
-                  fontSize: 15,
+                  fontSize: 14,
                   color: Color(0xff164866)),
             ),
-            const SizedBox(),
+            const SizedBox(
+              height: 16,
+            ),
             tryAgainButton()
           ],
         ),
@@ -65,8 +69,8 @@ class _NoInternetPageState extends State<NoInternetPage> {
       },
       child: Container(
         width: double.infinity,
-        height: 42,
-        margin: const EdgeInsets.only(left: 30, right: 30, top: 10),
+        height: 35,
+        margin: const EdgeInsets.only(left: 58, right: 58, top: 10),
         decoration: const BoxDecoration(
           color: Color(0xff164866),
           borderRadius: BorderRadius.all(Radius.circular(25)),
@@ -76,7 +80,7 @@ class _NoInternetPageState extends State<NoInternetPage> {
           "Թարմացնել",
           style: TextStyle(
               fontWeight: FontWeight.w700,
-              fontSize: 15,
+              fontSize: 14,
               color: Color(0xffFFFFFF)),
         ),
       ),

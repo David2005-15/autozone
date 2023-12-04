@@ -150,6 +150,7 @@ class _ChooseLocationPageState extends State<ChooseLocationPage> {
         paymentMetadata["address"] = provinceTexPlaceData[0]["data"]["address"];
         paymentMetadata["workingTime"] =
             provinceTexPlaceData[0]["data"]["work_time"];
+        selectedStationdId = provinceTexPlaceData[0]["id"] as int;
       } else {
         checkedValue = List.filled(provinceTexPlaceData.length, false);
         nearestCheckedValue = List.filled(additionalLocations.length, false);
@@ -200,19 +201,23 @@ class _ChooseLocationPageState extends State<ChooseLocationPage> {
         ),
       ),
       body: Container(
-        margin: const EdgeInsets.only(top: 25),
+        // margin: const EdgeInsets.only(top: 25),
         width: double.infinity,
         height: double.infinity,
-        color: Colors.white,
+        color: const Color(0xffFCFCFC),
         child: Column(
           children: <Widget>[
             province.isNotEmpty
                 ? Container(
                     width: double.infinity,
-                    margin: const EdgeInsets.only(left: 10, right: 10),
+                    margin: const EdgeInsets.only(
+                      left: 10,
+                      right: 10,
+                      top: 10,
+                    ),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(4),
-                      color: Colors.grey[200],
+                      color: const Color(0xffF3F4F6),
                     ),
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: DropdownButton(
@@ -262,11 +267,10 @@ class _ChooseLocationPageState extends State<ChooseLocationPage> {
                 : Container(),
             Container(
               width: double.infinity,
-              margin: const EdgeInsets.only(
-                  left: 10, right: 10, top: 10, bottom: 10),
+              margin: const EdgeInsets.only(left: 10, right: 10, top: 10),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(4),
-                color: Colors.grey[200],
+                color: const Color(0xffF3F4F6),
               ),
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: DropdownButton(
@@ -332,6 +336,9 @@ class _ChooseLocationPageState extends State<ChooseLocationPage> {
                 }).toList(),
               ),
             ),
+            SizedBox(
+              height: 10,
+            ),
             Expanded(
               child: SingleChildScrollView(
                 child: Column(
@@ -345,7 +352,7 @@ class _ChooseLocationPageState extends State<ChooseLocationPage> {
                                   i,
                                   StationsChip(
                                     name: e["data"]["name"],
-                                    address: e["data"]["address"],
+                                    address: selectedValue == "Երևան" ? e["data"]["address"] : "$selectedChil, ${e["data"]["address"]}",
                                     workingTime: e["data"]["work_time"],
                                     longtitude: double.parse(e["longitude"]),
                                     latitude: double.parse(e["latitude"]),

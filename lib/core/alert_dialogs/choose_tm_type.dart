@@ -38,35 +38,16 @@ void tm_type_car(BuildContext context, String? autoMark, String? autoNumber,
                   ),
                   Container(
                     margin: const EdgeInsets.only(bottom: 26),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: <Widget>[
-                        Expanded(
-                          child: Text(
-                            autoMark ?? 'No data',
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xff164866)),
-                          ),
-                        ),
-                        const SizedBox(
-                          width: 10,
-                        ),
-                        Container(
-                          child: FittedBox(
-                            fit: BoxFit.contain,
-                            child: Text(
-                              autoNumber ?? 'No Data',
-                              style: const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w700,
-                                  color: Color(0xff164866)),
-                            ),
-                          ),
-                        )
-                      ],
+                    alignment: Alignment.center,
+                    child: FittedBox(
+                      fit: BoxFit.contain,
+                      child: Text(
+                        "${autoMark!.split(" ")[0].toString() ?? 'No data'}   |   ${autoNumber ?? 'No data'}",
+                        style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xff164866)),
+                      ),
                     ),
                   ),
                   Column(
@@ -145,7 +126,7 @@ void tm_type_car(BuildContext context, String? autoMark, String? autoNumber,
                           : null,
                       double.infinity,
                       35,
-                      margin: const EdgeInsets.only(top: 10, bottom: 30))
+                      margin: const EdgeInsets.only(bottom: 20))
                 ],
               ),
             );
@@ -215,36 +196,50 @@ void tm_type_car_update(
                           color: Color(0xffC32024)),
                     ),
                   ),
-                  Container(
+                   Container(
                     margin: const EdgeInsets.only(bottom: 26),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: <Widget>[
-                        Expanded(
-                          child: Text(
-                            autoMark ?? 'No data',
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xff164866)),
-                          ),
-                        ),
-                        Container(
-                          child: FittedBox(
-                            fit: BoxFit.contain,
-                            child: Text(
-                              autoNumber ?? 'No Data',
-                              style: const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w700,
-                                  color: Color(0xff164866)),
-                            ),
-                          ),
-                        )
-                      ],
+                    alignment: Alignment.center,
+                    child: FittedBox(
+                      fit: BoxFit.contain,
+                      child: Text(
+                        "${autoMark!.split(" ")[0].toString() ?? 'No data'}   |   ${autoNumber ?? 'No data'}",
+                        style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xff164866)),
+                      ),
                     ),
                   ),
+                  // Container(
+                  //   margin: const EdgeInsets.only(bottom: 26),
+                  //   child: Row(
+                  //     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  //     children: <Widget>[
+                  //       Expanded(
+                  //         child: Text(
+                  //           autoMark ?? 'No data',
+                  //           overflow: TextOverflow.ellipsis,
+                  //           style: const TextStyle(
+                  //               fontSize: 20,
+                  //               fontWeight: FontWeight.w700,
+                  //               color: Color(0xff164866)),
+                  //         ),
+                  //       ),
+                  //       Container(
+                  //         child: FittedBox(
+                  //           fit: BoxFit.contain,
+                  //           child: Text(
+                  //             autoNumber ?? 'No Data',
+                  //             style: const TextStyle(
+                  //                 fontSize: 20,
+                  //                 fontWeight: FontWeight.w700,
+                  //                 color: Color(0xff164866)),
+                  //           ),
+                  //         ),
+                  //       )
+                  //     ],
+                  //   ),
+                  // ),
                   Column(
                     children: [
                       for (int i = 0; i < typeList.length; i++)
@@ -264,7 +259,6 @@ void tm_type_car_update(
                         }, typeList[i]["name"])
                     ],
                   ),
-                  const SizedBox(height: 20),
                   ButtonFactory.createButton(
                       "cta_green",
                       "Հաստատել",
@@ -295,7 +289,7 @@ void tm_type_car_update(
                           : null,
                       double.infinity,
                       35,
-                      margin: const EdgeInsets.only(top: 10, bottom: 30))
+                      margin: const EdgeInsets.only(bottom: 20))
                 ],
               ),
             );

@@ -4,10 +4,23 @@ import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
 
+/// Default [FirebaseOptions] for use with your Firebase apps.
+///
+/// Example:
+/// ```dart
+/// import 'firebase_options.dart';
+/// // ...
+/// await Firebase.initializeApp(
+///   options: DefaultFirebaseOptions.currentPlatform,
+/// );
+/// ```
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      return web;
+      throw UnsupportedError(
+        'DefaultFirebaseOptions have not been configured for web - '
+        'you can reconfigure this by running the FlutterFire CLI again.',
+      );
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -36,21 +49,12 @@ class DefaultFirebaseOptions {
     }
   }
 
-  static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyBzpfEDnZBhvTMVhQT6d5gZTmW7pOnjeY0',
-    appId: '1:62059107234:web:151f63c7799f1b873658fb',
-    messagingSenderId: '62059107234',
-    projectId: 'autozone-5d681',
-    authDomain: 'autozone-5d681.firebaseapp.com',
-    storageBucket: 'autozone-5d681.appspot.com',
-    measurementId: 'G-5XWER1KK52',
-  );
-
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyCNRRrqf-OqTlZG633YYCm6etg7r_V_Yrc',
-    appId: '1:62059107234:android:0b00e8fdbd67d55b3658fb',
+    appId: '1:62059107234:android:23b9b220c85c4eb03658fb',
     messagingSenderId: '62059107234',
     projectId: 'autozone-5d681',
+    databaseURL: 'https://autozone-5d681-default-rtdb.firebaseio.com',
     storageBucket: 'autozone-5d681.appspot.com',
   );
 
@@ -59,6 +63,7 @@ class DefaultFirebaseOptions {
     appId: '1:62059107234:ios:9e576bbb43819b6f3658fb',
     messagingSenderId: '62059107234',
     projectId: 'autozone-5d681',
+    databaseURL: 'https://autozone-5d681-default-rtdb.firebaseio.com',
     storageBucket: 'autozone-5d681.appspot.com',
     iosBundleId: 'com.example.autozone',
   );

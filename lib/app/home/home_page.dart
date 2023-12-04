@@ -8,13 +8,16 @@ import 'package:autozone/app/home/texzznum.dart';
 import 'package:autozone/app/home/user_settings.dart';
 import 'package:autozone/app/no_internet.dart';
 import 'package:autozone/core/alert_dialogs/inspection_day.dart';
-import 'package:autozone/core/alert_dialogs/loading_alert.dart';
+import 'package:autozone/core/alert_dialogs/report.dart';
+import 'package:autozone/core/alert_dialogs/success.dart';
 import 'package:autozone/core/factory/message_answer_factory.dart';
 import 'package:autozone/core/widgets/app_bar.dart';
 import 'package:autozone/core/widgets/home_page_widgets/home_page_auto_mark_tile.dart';
 import 'package:autozone/core/widgets/home_page_widgets/home_page_control_tile.dart';
 import 'package:autozone/domain/new_auto_repo/iauto.dart';
+import 'package:autozone/firebase_dynamic_link.dart';
 import 'package:autozone/utils/firebase_app.dart';
+import 'package:autozone/utils/image_cache.dart';
 import 'package:autozone/utils/location_cache_manager.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:dio/dio.dart';
@@ -64,6 +67,7 @@ class _HomePageState extends State<HomePage> {
   StreamSubscription<ConnectivityResult>? _connectivitySubscription;
 
   LocationsCacheManager manager = LocationsCacheManager();
+  ImageCacheManager imageCache = ImageCacheManager();
 
   Future<void> initConnectivity() async {
     ConnectivityResult status;
@@ -92,9 +96,32 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  void checkDate() async {
+    var prefs = await SharedPreferences.getInstance();
+
+    String? date = prefs.getString("today");
+
+    if (date == null) {
+      prefs.setString("today", DateTime.now().toIso8601String());
+      prefs.setInt("count", 0);
+    } else {
+      DateTime lastDate = DateTime.parse(date);
+
+      if (lastDate.day == DateTime.now().day - 1) {
+        prefs.setString("today", DateTime.now().toIso8601String());
+        prefs.setInt("count", 0);
+      }
+    }
+  }
+
   @override
   void initState() {
+    checkDate();
+
+    FirebaseDynamicLink.initDynamicLink(context);
+
     manager.setProvince();
+    imageCache.getUserImage();
 
     initConnectivity();
 
@@ -123,6 +150,9 @@ class _HomePageState extends State<HomePage> {
         if (value["issued_user_id"] as int == userId &&
             value["answer"] == "" &&
             value["active"] as bool == true) {
+          sendMessage(value["requested_user_id"] as int, "AutoZone",
+              "${value["car_number"]} մեքենայի վարորդը դիտել է Ձեր հաղորդագրությունը։");
+
           Future.delayed(const Duration(seconds: 1), () async {
             MessageAnswerFactory.getMessage(
                 snapshot: snapshot,
@@ -131,54 +161,103 @@ class _HomePageState extends State<HomePage> {
                 type: value["issue_type"] as String,
                 context: context,
                 number: value["car_number"],
+                onReport: (id) {
+                  showReportDialog(context, id, onApprove: () {
+                    success(context, "Հաղորդագրությունն\nուղարկված է");
+                    Future.delayed(const Duration(seconds: 1), () {
+                      Navigator.pop(context);
+                    });
+                  });
+                },
                 onClose: () {
                   Navigator.pop(context);
 
-                  snapshot.ref
-                      .update({"${snapshot.key}/answer": "Չեմ կարող մոտենալ"});
+                  snapshot.ref.update({
+                    "${snapshot.key}/answer": "Չեմ կարող մոտենալ",
+                    "${snapshot.key}/answer_date": DateTime.now().toString()
+                  });
+                  // snapshot.ref.update({
+                  //   "${snapshot.key}/answer_date": DateTime.now().toString()
+                  // });
 
-                  sendMessage(value["issued_user_id"] as int, "AutoZone",
+                  sendMessage(value["requested_user_id"] as int, "AutoZone",
                       "Չեմ կարող մոտենալ");
+
+                  success(context, "Հաղորդագրությունն\nուղարկված է");
                 },
                 onApprove: () {
                   Navigator.pop(context);
 
                   if (value["issue_type"] == "car_number") {
                     String answer =
-                        "Խնդրում եմ զանգահարել 0${value["phoneNumber"]} հեռախոսահամարին";
+                        "Խնդրում եմ զանգահարել 0${value["phoneNumber"]} հեռախոսահամարին:";
 
-                    snapshot.ref.update({"${snapshot.key}/answer": answer});
+                    snapshot.ref.update({
+                      "${snapshot.key}/answer": answer,
+                      "${snapshot.key}/answer_date": DateTime.now().toString()
+                    });
+                    // snapshot.ref.update({
+                    //   "${snapshot.key}/answer_date": DateTime.now().toString()
+                    // });
 
-                    sendMessage(value["issued_user_id"] as int, "AutoZone",
-                        "Խնդրում եմ զանգահարել 0${value["phoneNumber"]} հեռախոսահամարին");
+                    sendMessage(value["requested_user_id"] as int, "AutoZone",
+                        "Խնդրում եմ զանգահարել 0${value["phoneNumber"]} հեռախոսահամարին:");
                   } else {
-                    snapshot.ref
-                        .update({"${snapshot.key}/answer": "Շուտով կմոտենամ"});
+                    if (value["issue_type"] == "open_door" ||
+                        value["issue_type"] == "light_is_on") {
+                      snapshot.ref.update({
+                        "${snapshot.key}/answer": "Շնորհակալություն",
+                        "${snapshot.key}/answer_date": DateTime.now().toString()
+                      });
+                    } else {
+                      snapshot.ref.update({
+                        "${snapshot.key}/answer": "Շուտով կմոտենամ",
+                        "${snapshot.key}/answer_date": DateTime.now().toString()
+                      });
+                    }
+                    // snapshot.ref.update({
+                    //   "${snapshot.key}/answer_date": DateTime.now().toString()
+                    // });
 
-                    sendMessage(value["issued_user_id"] as int, "AutoZone",
+                    sendMessage(value["requested_user_id"] as int, "AutoZone",
                         "Շուտով կմոտենամ");
                   }
+
+                  success(context, "Հաղորդագրությունն\nուղարկված է");
                 },
                 onNumberApprove: (String number) {
                   Navigator.pop(context);
 
                   if (value["issue_type"] == "car_number") {
                     String answer =
-                        "Խնդրում եմ զանգահարել 0$number հեռախոսահամարին";
+                        "Խնդրում եմ զանգահարել 0$number հեռախոսահամարին:";
 
-                    snapshot.ref.update({"${snapshot.key}/answer": answer});
+                    snapshot.ref.update({
+                      "${snapshot.key}/answer": answer,
+                      "${snapshot.key}/answer_date": DateTime.now().toString()
+                    });
+                    // // snapshot.ref.update({
+                    // //   "${snapshot.key}/answer_date": DateTime.now().toString()
+                    // });
 
-                    sendMessage(value["issued_user_id"] as int, "AutoZone",
-                        "Խնդրում եմ զանգահարել 0$number հեռախոսահամարին");
+                    sendMessage(value["requested_user_id"] as int, "AutoZone",
+                        "Խնդրում եմ զանգահարել 0$number հեռախոսահամարին:");
                   } else {
-                    snapshot.ref
-                        .update({"${snapshot.key}/answer": "Շուտով կմոտենամ"});
+                    snapshot.ref.update({
+                      "${snapshot.key}/answer": "Շուտով կմոտենամ",
+                      "${snapshot.key}/answer_date": DateTime.now().toString()
+                    });
                   }
+
+                  success(context, "Հաղորդագրությունն\nուղարկված է");
                 },
                 phoneNumber: value["phoneNumber"]);
           });
 
-          snapshot.ref.update({"${snapshot.key}/active": false});
+          snapshot.ref.update({
+            "${snapshot.key}/active": false,
+            "${snapshot.key}/seenDate": DateTime.now().toString()
+          });
         }
       });
 
@@ -188,7 +267,8 @@ class _HomePageState extends State<HomePage> {
         Map<dynamic, dynamic> value = snapshot.value as Map;
 
         if (value["requested_user_id"] as int == userId &&
-            value["answer"] != "") {
+            value["answer"] != "" &&
+            value["phoneNumber"] != "") {
           setState(() {
             notificationCount += 1;
           });
@@ -203,8 +283,6 @@ class _HomePageState extends State<HomePage> {
             }
             return number;
           });
-
-          print(updatedText);
 
           showDialog(
               context: context,
@@ -251,7 +329,7 @@ class _HomePageState extends State<HomePage> {
                                   String phoneNumber =
                                       "${value["phoneNumber"]}";
 
-                                  print(phoneNumber);
+                                  // print(phoneNumber);
 
                                   Uri url = Uri.parse('tel:$phoneNumber');
 
@@ -261,7 +339,7 @@ class _HomePageState extends State<HomePage> {
                                 },
                                 child: Container(
                                   margin: const EdgeInsets.only(
-                                      left: 20, right: 20),
+                                      left: 20, right: 20, bottom: 10),
                                   width: 200,
                                   alignment: Alignment.center,
                                   height: 35,
@@ -278,9 +356,6 @@ class _HomePageState extends State<HomePage> {
                                 ),
                               )
                             : Container(),
-                        const SizedBox(
-                          height: 15,
-                        )
                       ],
                     ),
                   ),
@@ -413,6 +488,7 @@ class _HomePageState extends State<HomePage> {
                   preferredSize: const Size.fromHeight(45.0),
                   child: AutozoneAppBar(
                     userId: userId,
+                    dahk: dahkInfo,
                     notificationCount: notificationCount,
                     onLogo: () {},
                     onNotification: () {
@@ -457,6 +533,7 @@ class _HomePageState extends State<HomePage> {
                 BottomNavigationBarItem(
                     icon: Container(
                       height: 55,
+                      // margin: const EdgeInsets.only(top: 5),
                       alignment: Alignment.bottomCenter,
                       child: Column(
                         children: [
@@ -483,7 +560,10 @@ class _HomePageState extends State<HomePage> {
                                     borderRadius: BorderRadius.circular(6),
                                   ),
                                 )
-                              : Container()
+                              : Container(
+                                  margin: const EdgeInsets.only(top: 5),
+                                  height: 5,
+                                )
                         ],
                       ),
                     ),
@@ -491,6 +571,7 @@ class _HomePageState extends State<HomePage> {
                 BottomNavigationBarItem(
                     icon: Container(
                       height: 55,
+                      // margin: const EdgeInsets.only(top: 5),
                       alignment: Alignment.bottomCenter,
                       child: Column(
                         children: [
@@ -517,43 +598,46 @@ class _HomePageState extends State<HomePage> {
                                     borderRadius: BorderRadius.circular(6),
                                   ),
                                 )
-                              : Container()
+                              : Container(
+                                  margin: const EdgeInsets.only(top: 5),
+                                  height: 5,
+                                )
                         ],
                       ),
                     ),
                     label: ""),
                 BottomNavigationBarItem(
-                  icon: Container(
-                    height: 55,
-                    alignment: Alignment.bottomCenter,
-                    child: Column(
-                      children: [
-                        Container(
-                            width: 50,
-                            height: 42,
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: const ImageIcon(
-                              AssetImage(
-                                  "assets/Navigation/NavigationBarSettings.png"),
-                              color: Color(0xff164866),
-                            )),
-                        _navigationBarPage == 2
-                            ? Container(
-                                width: 50,
-                                height: 5,
-                                margin: const EdgeInsets.only(top: 5),
-                                decoration: BoxDecoration(
-                                  color: Colors.red,
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                              )
-                            : Container()
-                      ],
-                    ),
+                  icon: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Container(
+                          width: 50,
+                          height: 42,
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: const ImageIcon(
+                            AssetImage(
+                                "assets/Navigation/NavigationBarSettings.png"),
+                            color: Color(0xff164866),
+                          )),
+                      _navigationBarPage == 2
+                          ? Container(
+                              width: 50,
+                              height: 5,
+                              margin: const EdgeInsets.only(top: 5),
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                            )
+                          : Container(
+                              margin: const EdgeInsets.only(top: 5),
+                              height: 5,
+                            )
+                    ],
                   ),
                   label: "",
                 ),
@@ -564,48 +648,58 @@ class _HomePageState extends State<HomePage> {
           body: _navigationBarPage == 0
               ? widget.isRedirect || !doHaveCar
                   ? const NewCarPage()
-                  : SingleChildScrollView(
-                      child: Column(
-                        children: [
-                          buildAutoMarkTileRow(),
-                          HomePageControlTile(
-                            title: "Տեխզննում",
-                            date: autoTexDates.isEmpty
-                                ? "${DateTime.now().month}.${DateTime.now().year}"
-                                : autoTexDates[_selected].year != 1970
-                                    ? "${autoTexDates[_selected].month.toString().padLeft(2, '0')}.${autoTexDates[_selected].year}"
-                                    : "-",
-                            onTap: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => TexPage(
-                                            user_id: userId,
-                                            inspectionDate:
-                                                autoTexDates[_selected],
-                                            dahk: autoDahk[_selected],
-                                            regNumber: selectedTechNumber,
-                                            autoNumber: selectedAutoNumber,
-                                          )));
-                            },
-                          ),
-                          HomePageControlTile(
-                            title: "ԱՊՊԱ",
-                            date: autoInspectionDates.isEmpty
-                                ? "${DateTime.now().month}.${DateTime.now().year}"
-                                : "${autoInspectionDates[_selected].month.toString().padLeft(2, '0')}.${autoInspectionDates[_selected].year}",
-                            onTap: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => AppaPage(
-                                          date: autoInspectionDates[_selected],
-                                          inspectionCompany:
-                                              autiInspectionCompanies[
-                                                  _selected])));
-                            },
-                          )
-                        ],
+                  : Container(
+                      color: const Color(0xffFCFCFC),
+                      width: double.infinity,
+                      height: double.infinity,
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            buildAutoMarkTileRow(),
+                            HomePageControlTile(
+                              title: "Տեխզննում",
+                              date: autoTexDates.isEmpty
+                                  ? "${DateTime.now().month}.${DateTime.now().year}"
+                                  : autoTexDates[_selected].year != 1970
+                                      ? "${autoTexDates[_selected].month.toString().padLeft(2, '0')}.${autoTexDates[_selected].year}"
+                                      : "-",
+                              onTap: () {
+                                TexPageData data = TexPageData(
+                                    inspectionDate: autoTexDates[_selected],
+                                    regNumber: selectedTechNumber,
+                                    autoNumber: selectedAutoNumber,
+                                    user_id: userId,
+                                    dahk: autoDahk[_selected]);
+
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => TexPage(
+                                              data: data,
+                                            )));
+                              },
+                            ),
+                            HomePageControlTile(
+                              title: "ԱՊՊԱ",
+                              date: autoInspectionDates.isEmpty
+                                  ? "${DateTime.now().month}.${DateTime.now().year}"
+                                  : autoInspectionDates[_selected].year == 1970
+                                      ? "-"
+                                      : "${autoInspectionDates[_selected].month.toString().padLeft(2, '0')}.${autoInspectionDates[_selected].year}",
+                              onTap: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => AppaPage(
+                                            date:
+                                                autoInspectionDates[_selected],
+                                            inspectionCompany:
+                                                autiInspectionCompanies[
+                                                    _selected])));
+                              },
+                            )
+                          ],
+                        ),
                       ),
                     )
               : _navigationBarPage == 2
@@ -644,16 +738,16 @@ class _HomePageState extends State<HomePage> {
   Future getAutoList() async {
     var prefs = await SharedPreferences.getInstance();
 
-    bool isLoading = false;
+    // bool isLoading = false;
 
-    if (autos.isEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        setState(() {
-          isLoading = true;
-        });
-        loading(context);
-      });
-    }
+    // if (autos.isEmpty) {
+    //   WidgetsBinding.instance.addPostFrameCallback((_) {
+    //     setState(() {
+    //       isLoading = true;
+    //     });
+    //     loading(context);
+    //   });
+    // }
 
     var result =
         await dio.get("https://autozone.onepay.am/api/v1/users/getData",
@@ -680,8 +774,9 @@ class _HomePageState extends State<HomePage> {
 
         autos.forEach((element) async {
           autoImagePath.add(await getLogoPath(element["carMark"]));
-          autoInspectionDates.add(DateTime.parse(element["insuranceEndDate"]));
-          autiInspectionCompanies.add(element["insuranceInfo"]);
+          autoInspectionDates.add(DateTime.parse(element["insuranceEndDate"] ??
+              DateTime(1970, 1, 1).toIso8601String()));
+          autiInspectionCompanies.add(element["insuranceInfo"] ?? "-");
           if (element["inspection"] != null) {
             autoTexDates.add(DateTime.parse(element["inspection"]));
           } else {
@@ -698,22 +793,48 @@ class _HomePageState extends State<HomePage> {
 
     await getDahk();
 
-    if (isLoading) {
-      Navigator.pop(context);
-    }
+    // if (isLoading) {
+    //   Navigator.pop(context);
+    // }
   }
 
   List<bool> autoDahk = [];
   var autoService = ServiceProvider.required<IAuto>();
 
-  Future getDahk() async {
-    for (var element in autos) {
-      var result = await autoService.addAuto(element["carTechNumber"]);
+  dynamic dahkInfo = {};
 
+  Future getDahk() async {
+    var prefs = await SharedPreferences.getInstance();
+
+    var result =
+        await dio.get("https://autozone.onepay.am/api/v1/users/GetDAHKInfo",
+            options: Options(
+              headers: {"Authorization": "Bearer ${prefs.getString("token")}"},
+            ));
+
+    setState(() {
+      dahkInfo = result.data;
+    });
+
+    // print(result.data);
+
+    // var keys = result.data.keys.toList();
+    // var values = result.data.values.toList();
+    for (var element in currentAutoNumbers) {
+      // print(element);
+      // var result = await autoService.addAuto(element["carTechNumber"])
       setState(() {
-        autoDahk.add(result["dahk"] as bool);
+        autoDahk.add(result.data[element] as bool);
       });
     }
+
+    // for (var element in autos) {
+    //   var result = await autoService.addAuto(element["carTechNumber"]);
+
+    //   setState(() {
+    //     autoDahk.add(result["dahk"] as bool);
+    //   });
+    // }
   }
 
   Future checkInspectionDate(
@@ -724,15 +845,21 @@ class _HomePageState extends State<HomePage> {
       int days = difference.inDays;
 
       if (days <= 30 && dates[i].year != 1970) {
-        showInspectionExpire(context, autoNumber[i], dates[i],
-            autos[i]["carTechNumber"], database!, userId);
+        showInspectionExpire(
+            context,
+            autoNumber[i],
+            dates[i],
+            autos[i]["carTechNumber"],
+            database!,
+            userId,
+            dahkInfo[autos[i]["carNumber"]] as bool);
       }
     }
   }
 
   Widget buildAutoMarkTileRow() {
     return Container(
-      margin: const EdgeInsets.only(left: 8, right: 8),
+      margin: const EdgeInsets.only(left: 8, right: 8, top: 5),
       width: double.infinity,
       child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
@@ -742,7 +869,9 @@ class _HomePageState extends State<HomePage> {
               children: [
                 for (int i = 0; i < autos.length; i++)
                   HomePageAutoMarkTile(
-                    imagePath: autoImagePath[i],
+                    imagePath: autoImagePath[i] == ""
+                        ? "assets/Navigation/NavigationBarAuto.png"
+                        : autoImagePath[i],
                     autoNumber: autos[i]["carNumber"],
                     backgroundColor: _selected == i && autos.length != 1
                         ? const Color(0xff164866)

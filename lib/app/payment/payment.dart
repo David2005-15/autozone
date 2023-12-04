@@ -1,4 +1,10 @@
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:screenshot/screenshot.dart';
+import 'package:share_plus/share_plus.dart';
 
 class PaymentInfo extends StatefulWidget {
   final Map<dynamic, dynamic> items;
@@ -23,6 +29,8 @@ class PaymentInfo extends StatefulWidget {
 }
 
 class _PaymentInfoState extends State<PaymentInfo> {
+  ScreenshotController screenshotController = ScreenshotController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -37,6 +45,31 @@ class _PaymentInfoState extends State<PaymentInfo> {
         backgroundColor: Colors.white,
         elevation: 0,
         leadingWidth: 40,
+        actions: <Widget>[
+          InkWell(
+            onTap: () {
+              screenshotController.capture().then((image) async {
+                if (image != null) {
+                  final directory = await getApplicationDocumentsDirectory();
+                  final imagePath =
+                      await File('${directory.path}/image.png').create();
+                  await imagePath.writeAsBytes(image);
+
+                  /// Share Plugin
+                  await Share.shareXFiles([XFile(imagePath.path)]);
+                }
+              });
+            },
+            child: const Image(
+              image: AssetImage("assets/Settings/Share.png"),
+              width: 22,
+              height: 22,
+            ),
+          ),
+          const SizedBox(
+            width: 16,
+          )
+        ],
         leading: Padding(
           padding: const EdgeInsets.only(left: 20.0, top: 2),
           child: InkWell(
@@ -60,25 +93,28 @@ class _PaymentInfoState extends State<PaymentInfo> {
         iconTheme: const IconThemeData(color: Color(0xff164866)),
       ),
       backgroundColor: Colors.white,
-      body: Container(
-        // padding: const EdgeInsets.only(left: 10, right: 10),
-        width: double.infinity,
-        height: double.infinity,
-        color: Colors.white,
-        child: Column(
-          children: <Widget>[
-            keyValuePair("Գործարք/ամսաթիվ", widget.date),
-            keyValuePair("Սեփականատեր", widget.name),
-            keyValuePair("Հաշվ․ համարանիշ", widget.autoNumber),
-            keyValuePair(reformatText(widget.items["name"]),
-                "${widget.items["value"]} դր․"),
-            keyValuePair("Միջնորդավճար", "300 դր․"),
-            // for (int i = 0; i < widget.items.length; i++)
-            //   keyValuePair(reformatText(widget.items[i]["name"]),
-            //       "${widget.items[i]["value"]} դր․"),
-            keyValuePair("Ընդամենը վճարվել է",
-                "${int.parse(widget.items["value"].toString()) + 300} դր․")
-          ],
+      body: Screenshot(
+        controller: screenshotController,
+        child: Container(
+          // padding: const EdgeInsets.only(left: 10, right: 10),
+          width: double.infinity,
+          height: double.infinity,
+          color: Colors.white,
+          child: Column(
+            children: <Widget>[
+              keyValuePair("Գործարք/ամսաթիվ", widget.date),
+              keyValuePair("Սեփականատեր", widget.name),
+              keyValuePair("Հաշվ․ համարանիշ", widget.autoNumber),
+              keyValuePair(reformatText(widget.items["name"]),
+                  "${widget.items["value"]} դր․"),
+              keyValuePair("Միջնորդավճար", "300 դր․"),
+              // for (int i = 0; i < widget.items.length; i++)
+              //   keyValuePair(reformatText(widget.items[i]["name"]),
+              //       "${widget.items[i]["value"]} դր․"),
+              keyValuePair("Ընդամենը վճարվել է",
+                  "${int.parse(widget.items["value"].toString()) + 300} դր․")
+            ],
+          ),
         ),
       ),
     );
@@ -98,7 +134,7 @@ class _PaymentInfoState extends State<PaymentInfo> {
             key,
             style: const TextStyle(
               fontWeight: FontWeight.w700,
-              fontSize: 15,
+              fontSize: 13,
               color: Color(0xff164866),
             ),
           ),
@@ -106,7 +142,7 @@ class _PaymentInfoState extends State<PaymentInfo> {
             value,
             style: const TextStyle(
               fontWeight: FontWeight.w700,
-              fontSize: 15,
+              fontSize: 13,
               color: Color(0xff164866),
             ),
           ),

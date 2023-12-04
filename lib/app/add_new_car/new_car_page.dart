@@ -35,10 +35,13 @@ class _NewCarPageState extends State<NewCarPage> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: <Widget>[buildTitleSection(), buildSearchSection()],
+    return Container(
+      color: const Color(0xffFCFCFC),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[buildTitleSection(), buildSearchSection()],
+        ),
       ),
     );
   }
@@ -67,7 +70,7 @@ class _NewCarPageState extends State<NewCarPage> {
             textAlign: TextAlign.center,
             style: TextStyle(
               fontWeight: FontWeight.w700,
-              fontSize: 22,
+              fontSize: 20,
               color: Color(0xff164866),
             ),
           ),

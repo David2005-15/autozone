@@ -23,7 +23,7 @@ class HomePageControlTile extends StatelessWidget {
         margin: const EdgeInsets.only(right: 13, left: 13, top: 14),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(6),
-          color: const Color(0xffF2F2F4),
+          color: const Color(0xffF3F4F6)
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,

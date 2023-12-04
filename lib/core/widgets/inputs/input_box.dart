@@ -40,13 +40,13 @@ class InputBox extends StatelessWidget {
             decoration: InputDecoration(
               filled: true,
               fillColor: const Color(0xffF2F2F4),
-              contentPadding: const EdgeInsets.symmetric(vertical: 4.0),
+              contentPadding: const EdgeInsets.only(right: 20),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(50),
                 borderSide: BorderSide.none,
               ),
               prefixIcon: const Padding(
-                padding: EdgeInsets.only(left: 10.0),
+                padding: EdgeInsets.only(left: 20.0, bottom: 2),
                 child: Text(
                   " +374",
                   textAlign: TextAlign.center,

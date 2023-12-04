@@ -50,6 +50,10 @@ class _TexPay extends State<TexPay> {
     if (response.data["success"] as bool == true) {
       setState(() {
         serviceToPay = response.data["services"];
+
+        if (serviceToPay[0]["amounts"]["data"][0]["amount"] <= 0) {
+          isElectroCar = true;
+        }
         selectedSwitches = List.filled(serviceToPay.length, true);
 
         serviceToPay.forEach((element) async {
@@ -62,9 +66,7 @@ class _TexPay extends State<TexPay> {
           element["amounts"]["data"].forEach((e) {
             amount += int.parse(e["amount"].toString());
 
-            if (amount == 0) {
-              selectedSwitches[index] = false;
-            }
+            selectedSwitches[index] = false;
 
             currentAmount = amount;
           });
@@ -82,6 +84,8 @@ class _TexPay extends State<TexPay> {
 
   List<int> payServicesId = [];
 
+  bool isElectroCar = false;
+
   int amount = 0;
 
   int currentAmount = 0;
@@ -97,6 +101,14 @@ class _TexPay extends State<TexPay> {
   @override
   Widget build(BuildContext context) {
     coSum = 300;
+
+    if (isElectroCar) {
+      coSwitch = false;
+    }
+
+    // if(serviceToPay != null && serviceToPay[0]["amounts"]["data"][0]["amount"] <= 0) {
+    //   coSwitch = false;
+    // }
 
     return Scaffold(
       appBar: AppBar(
@@ -136,7 +148,7 @@ class _TexPay extends State<TexPay> {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        color: Colors.white,
+        color: const Color(0xffFCFCFC),
         child: serviceToPay.isNotEmpty
             ? SizedBox(
                 height: MediaQuery.of(context).size.height - 100,
@@ -178,7 +190,10 @@ class _TexPay extends State<TexPay> {
                                             .length -
                                         1)
                                     .map<String>((e) {
-                                  coSum += int.parse(e["amount"].toString());
+                                  if (int.parse(e["amount"].toString()) >= 0) {
+                                    coSum += int.parse(e["amount"].toString());
+                                  }
+                                  // coSum += int.parse(e["amount"].toString());
 
                                   return e["amount"].toString();
                                 }).toList(),
@@ -187,22 +202,44 @@ class _TexPay extends State<TexPay> {
                                     .toString(),
                                 coSwitch, (val) {
                               setState(() {
-                                coSwitch = val!;
+                                if (serviceToPay[0]["amounts"]["data"][0]
+                                        ["amount"] >
+                                    0) {
+                                  coSwitch = val!;
 
-                                if (!coSwitch) {
-                                  currentAmount -= coSum;
-                                  payServicesId.remove(serviceToPay[0]["id"]);
+                                  if (!coSwitch) {
+                                    currentAmount -= coSum;
+                                    payServicesId.remove(serviceToPay[0]["id"]);
+                                  } else {
+                                    currentAmount += coSum;
+                                    payServicesId.add(serviceToPay[0]["id"]);
+                                  }
+
+                                  if (coSwitch == false &&
+                                      texPaymentSwitch == false) {
+                                    texPaymentSwitch = true;
+                                    currentAmount += texSum;
+                                    payServicesId.add(serviceToPay[1]["id"]);
+                                  }
                                 } else {
-                                  currentAmount += coSum;
-                                  payServicesId.add(serviceToPay[0]["id"]);
+                                  fail(context, "Էլեկտրական կամ հիբրիդային շարժիչով մեքենաները ազատված են բնապահպանական հարկի վճարից։");
                                 }
+                                // coSwitch = val!;
 
-                                if (coSwitch == false &&
-                                    texPaymentSwitch == false) {
-                                  texPaymentSwitch = true;
-                                  currentAmount += texSum;
-                                  payServicesId.add(serviceToPay[1]["id"]);
-                                }
+                                // if (!coSwitch) {
+                                //   currentAmount -= coSum;
+                                //   payServicesId.remove(serviceToPay[0]["id"]);
+                                // } else {
+                                //   currentAmount += coSum;
+                                //   payServicesId.add(serviceToPay[0]["id"]);
+                                // }
+
+                                // if (coSwitch == false &&
+                                //     texPaymentSwitch == false) {
+                                //   texPaymentSwitch = true;
+                                //   currentAmount += texSum;
+                                //   payServicesId.add(serviceToPay[1]["id"]);
+                                // }
                               });
                             }),
                             buildPaySections(
@@ -213,24 +250,24 @@ class _TexPay extends State<TexPay> {
                                     .toString(),
                                 texPaymentSwitch, (val) {
                               setState(() {
-                                texPaymentSwitch = val!;
+                                if (!isElectroCar) {
+                                  texPaymentSwitch = val!;
 
-                                if (!texPaymentSwitch) {
-                                  currentAmount -= texSum;
-                                  payServicesId.remove(serviceToPay[1]["id"]);
-                                } else {
-                                  currentAmount += texSum;
-                                  payServicesId.add(serviceToPay[1]["id"]);
+                                  if (!texPaymentSwitch) {
+                                    currentAmount -= texSum;
+                                    payServicesId.remove(serviceToPay[1]["id"]);
+                                  } else {
+                                    currentAmount += texSum;
+                                    payServicesId.add(serviceToPay[1]["id"]);
+                                  }
+
+                                  if (coSwitch == false &&
+                                      texPaymentSwitch == false) {
+                                    coSwitch = true;
+                                    currentAmount += coSum;
+                                    payServicesId.add(serviceToPay[0]["id"]);
+                                  }
                                 }
-
-                                if (coSwitch == false &&
-                                    texPaymentSwitch == false) {
-                                  coSwitch = true;
-                                  currentAmount += coSum;
-                                  payServicesId.add(serviceToPay[0]["id"]);
-                                }
-
-                                print(payServicesId);
                               });
                             }),
                             Container(
@@ -248,6 +285,9 @@ class _TexPay extends State<TexPay> {
                                     fontSize: 25),
                               ),
                             ),
+                            SizedBox(
+                              height: 10,
+                            )
                           ],
                         ),
                       ),
@@ -293,7 +333,7 @@ class _TexPay extends State<TexPay> {
                               context,
                               MaterialPageRoute(
                                   builder: (context) => HomePage(
-                                        isRedirect: true,
+                                        isRedirect: false,
                                       )));
                         }
                       } catch (e) {
@@ -344,7 +384,7 @@ class _TexPay extends State<TexPay> {
                   ),
                 ),
                 Container(
-                  margin: const EdgeInsets.only(right: 15),
+                  margin: const EdgeInsets.only(right: 5),
                   child: Switch(
                     value: isSelected,
                     onChanged: onChanged,
@@ -451,7 +491,7 @@ class _TexPay extends State<TexPay> {
                   ),
                 ),
                 Container(
-                  margin: const EdgeInsets.only(right: 15),
+                  margin: const EdgeInsets.only(right: 5),
                   child: Switch(
                     value: isSelected,
                     onChanged: onChanged,
@@ -554,7 +594,7 @@ class _TexPay extends State<TexPay> {
         children: <Widget>[
           Padding(
             padding:
-                const EdgeInsets.only(left: 15, right: 5, top: 10, bottom: 5),
+                const EdgeInsets.only(left: 15, right: 5, top: 10, bottom: 10),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
@@ -566,21 +606,24 @@ class _TexPay extends State<TexPay> {
                     color: Color(0xff164866),
                   ),
                 ),
-                InkWell(
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
-                  child: const Image(
-                      image: AssetImage("assets/Settings/Edit.png"),
-                      width: 21,
-                      height: 21),
+                Container(
+                  margin: const EdgeInsets.only(right: 15),
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Image(
+                        image: AssetImage("assets/Settings/Edit.png"),
+                        width: 21,
+                        height: 21),
+                  ),
                 )
               ],
             ),
           ),
           Container(
             width: double.infinity,
-            height: 70,
+            height: 80,
             margin: const EdgeInsets.only(right: 5, left: 5),
             padding: const EdgeInsets.only(top: 5, bottom: 5, left: 10),
             decoration: const BoxDecoration(color: Colors.white),
@@ -593,24 +636,19 @@ class _TexPay extends State<TexPay> {
                   child: Text(address,
                       style: const TextStyle(
                         fontWeight: FontWeight.w700,
-                        fontSize: 15,
+                        fontSize: 14,
                         color: Color(0xff164866),
                       )),
                 ),
+                const SizedBox(
+                  height: 5,
+                ),
                 Row(
                   children: [
-                    const Image(
-                        image: AssetImage("assets/WorkHours.png"),
-                        width: 20,
-                        height: 20,
-                        color: Color(0xff164866)),
-                    const SizedBox(
-                      width: 5,
-                    ),
                     Text(workingTime,
                         style: const TextStyle(
                           fontWeight: FontWeight.w700,
-                          fontSize: 15,
+                          fontSize: 14,
                           color: Color(0xff164866),
                         )),
                   ],

@@ -1,9 +1,15 @@
 import 'package:autozone/core/alert_dialogs/report.dart';
+import 'package:autozone/core/alert_dialogs/success.dart';
 import 'package:autozone/core/factory/button_factory.dart';
 import 'package:flutter/material.dart';
 
-void doorIsOpenDialogAnswer(BuildContext context, String carNumber,
-    VoidCallback onClose, VoidCallback onApprove, int id) {
+void doorIsOpenDialogAnswer(
+    BuildContext context,
+    String carNumber,
+    VoidCallback onClose,
+    VoidCallback onApprove,
+    int id,
+    Function(int) onReport) {
   showDialog(
       context: context,
       builder: (context) {
@@ -18,30 +24,31 @@ void doorIsOpenDialogAnswer(BuildContext context, String carNumber,
                 Container(
                   height: 70,
                   alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: const Color(0xffF3F4F6),
-                    // borderRadius: BorderRadius.circular(10),
-                  ),
+                  decoration: const BoxDecoration(
+                      color: Color(0xffF3F4F6),
+                      borderRadius: BorderRadius.only(
+                          topRight: Radius.circular(5),
+                          topLeft: Radius.circular(5))),
                   child: Text(
                     "$carNumber մեքենայի վարորդ, Ձեր մեքենայի պատուհանը բաց է։",
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       fontWeight: FontWeight.w700,
-                      fontSize: 15,
+                      fontSize: 14,
                       color: Color(0xff164866),
                     ),
                   ),
                 ),
                 SizedBox(
-                  height: 20,
+                  height: 10,
                 ),
                 const Image(
                   image: AssetImage("assets/Message/OpenDoor.png"),
                   width: 200,
-                  height: 58,
+                  height: 150,
                 ),
                 SizedBox(
-                  height: 20,
+                  height: 10,
                 ),
                 ButtonFactory.createButton("cta_green", "Շնորհակալություն", () {
                   onApprove();
@@ -53,7 +60,13 @@ void doorIsOpenDialogAnswer(BuildContext context, String carNumber,
                 InkWell(
                   onTap: () {
                     Navigator.pop(context);
-                    showReportDialog(context, id);
+                    onReport(id);
+                    // showReportDialog(context, id, onApprove: () {
+                    //   success(context, "Հաղորդագրությունն\nուղարկված է");
+                    //   Future.delayed(Duration(seconds: 1), () {
+                    //     Navigator.pop(context);
+                    //   });
+                    // });
                   },
                   child: Container(
                       height: 27,

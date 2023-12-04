@@ -62,12 +62,12 @@ class AppaPage extends StatelessWidget {
             const SizedBox(
               height: 40,
             ),
-            Text(
+            date.year != 1970 ? Text(
                 "Ավարտ` ${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year}",
                 style: const TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 18,
-                    color: Color(0xff164866))),
+                    color: Color(0xff164866))): Container(),
             const SizedBox(
               height: 60,
             ),

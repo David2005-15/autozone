@@ -20,29 +20,30 @@ class MessageAnswerFactory {
       required String? phoneNumber,
       required int id,
       required DataSnapshot snapshot,
-      required String key}) {
+      required String key,
+      required Function(int) onReport}) {
     switch (type) {
       case "open_door":
-        doorIsOpenDialogAnswer(context, number, onClose, onApprove, id);
+        doorIsOpenDialogAnswer(context, number, onClose, onApprove, id, onReport);
         break;
       case "disturb":
-        carDisturbingAnswer(context, number, onClose, onApprove, id);
+        carDisturbingAnswer(context, number, onClose, onApprove, id, onReport);
         break;
       case "acident":
-        carAcidentAnswer(context, number, onClose, onApprove, id);
+        carAcidentAnswer(context, number, onClose, onApprove, id, onReport);
         break;
       case "car_number":
-        carNumberAnswer(context, number, onClose, onNumberApprove, phoneNumber!, id, snapshot, key);
+        carNumberAnswer(context, number, onClose, onNumberApprove, phoneNumber!, id, snapshot, key, onReport);
       case "car_hit":
-        carHitAnswer(context, number, onClose, onApprove, id);
+        carHitAnswer(context, number, onClose, onApprove, id, onReport);
         break;
       case "light_is_on":
-        lightIsOnAnswer(context, number, onClose, onApprove, id);
+        lightIsOnAnswer(context, number, onClose, onApprove, id, onReport);
         break;
       case "evacuation":
-        carEvaquantionAnswer(context, number, onClose, onApprove, id);
+        carEvaquantionAnswer(context, number, onClose, onApprove, id, onReport);
       case "closed_enterance":
-        carClosedEnteranceAnswer(context, number, onClose, onApprove, id);
+        carClosedEnteranceAnswer(context, number, onClose, onApprove, id, onReport);
         break;
     }
   }

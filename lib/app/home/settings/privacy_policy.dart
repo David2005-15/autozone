@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 
 class PrivacyPolicy extends StatefulWidget {
@@ -50,6 +51,7 @@ class _PrivacyPolicyState extends State<PrivacyPolicy> {
         child: SingleChildScrollView(
           child: Column(
             children: [
+              SizedBox(height: 10,),
               getPrivacyText(),
             ],
           ),
@@ -58,7 +60,7 @@ class _PrivacyPolicyState extends State<PrivacyPolicy> {
     );
   }
 
-  RichText getPrivacyText() {
+  Widget getPrivacyText() {
     return RichText(
       text: const TextSpan(
         text: "Ա. Ընդհանուր դրույթներ\n",
@@ -68,18 +70,22 @@ class _PrivacyPolicyState extends State<PrivacyPolicy> {
           color: Color(0xff164866)
         ),
         children: [
+          TextSpan(text: "\n"),
           TextSpan(text: "Ստորև պայմանները հանդիսանում են AutoZone հավելվածի հեղինակ «Բիգտեխլայն» ՍՊ ընկերության (այսուհետև՝ Ընկերություն) և այդ պայմաններով AutoZone հավելվածի միջոցով ծառայություն ստանալու ցանկություն հայտնած ֆիզիկական անձանց և կազմակերպությունների (այսուհետ՝ Օգտատեր) միջև ծառայությունների մատուցման հրապարակային օֆերտայի դրույթներ։ AutoZone հավելված մուտք գործելով և հավելվածի ծառայություններից օգտվելով Օգտատերը հաստատում է, որ ամբողջությամբ ծանոթացել է ծառայություններից օգտվելու պայմաններին։\n", style: TextStyle(fontWeight: FontWeight.w500, fontSize: 15, color: Color(0xff164866))),
           TextSpan(text: "\n"),
           TextSpan(text: "Ա. Անձնական տվյալների օգտագործում\n"),
+          TextSpan(text: "\n"),
           TextSpan(text: "Ընկերությունը սույնով պարտավորվում է ապահովել իր Օգտատերերի անձնական տվյալների գաղտնիությունը։ Ընդունելով սույն պայմանները՝ Օգտատերը իր համաձայնությունն է տալիս Ընկերության կողմից իր անձնական տվյալների օգտագործմանը՝ այնքանով, որքանով այն անհրաժեշտ է AutoZone հավելվածի միջոցով ծառայությունների մատուցման համար։\n", style: TextStyle(fontWeight: FontWeight.w500, fontSize: 15, color: Color(0xff164866))),
           TextSpan(text: "\n"),
           TextSpan(text: "Բ. Անձնական տվյալների պահպանում\n"),
-          TextSpan(text: "Օգտատիրոջ համաձայնության հիման վրա մշակվող տվյալները պահպանվում են այն ժամկետով, օրն Օգտատերը AutoZone հավելվածի միջոցի իր անձնական էջում կսահմանի։ Օգտատերը ցանկացած ժամանակ կարող է անձնական էջում կատարել տվյալների ուղղում, հեռացում, ինչպես նաև տվյալների մշակման դադարեցում։ Օգտատիրոջ ցանկացած հրահանգի (գործողության) դեպքում հավելվածում ավտոմատացված կերպով կիրականացվի համապատասխան գործողություն։\n", style: TextStyle(fontWeight: FontWeight.w500, fontSize: 15, color: Color(0xff164866))),
           TextSpan(text: "\n"),
-          TextSpan(text: "Գ. Վճարումներ\n"),
-          TextSpan(text: "AutoZone հավելվածի միջոցով կատարված վճարումների գումարի վերադարձ չի նախատեսվում։ Այն հանդիսանում է գանձապետական, ինչպես նաև սպասարկող (տեխզննման ծառայություն մատուցող) տեխզննման կայանի վճարումներ, որոնք վճարում կատարելուց հետո անմիջապես փոխանցվում են։\n", style: TextStyle(fontWeight: FontWeight.w500, fontSize: 15, color: Color(0xff164866))),
+          TextSpan(text: "Օգտատիրոջ համաձայնության հիման վրա մշակվող տվյալները պահպանվում են այն ժամկետով, որն Օգտատերը AutoZone հավելվածի միջոցի իր անձնական էջում կսահմանի։ Օգտատերը ցանկացած ժամանակ կարող է անձնական էջում կատարել տվյալների ուղղում, հեռացում, ինչպես նաև տվյալների մշակման դադարեցում։ Օգտատիրոջ ցանկացած հրահանգի (գործողության) դեպքում հավելվածում ավտոմատացված կերպով կիրականացվի համապատասխան գործողություն։\n", style: TextStyle(fontWeight: FontWeight.w500, fontSize: 15, color: Color(0xff164866))),
           TextSpan(text: "\n"),
-          TextSpan(text: "Դ. Օգտագործման այլ կանոններ\n"),
+          // TextSpan(text: "Գ. Վճարումներ\n"),
+          // TextSpan(text: "AutoZone հավելվածի միջոցով կատարված վճարումների գումարի վերադարձ չի նախատեսվում։ Այն հանդիսանում է գանձապետական, ինչպես նաև սպասարկող (տեխզննման ծառայություն մատուցող) տեխզննման կայանի վճարումներ, որոնք վճարում կատարելուց հետո անմիջապես փոխանցվում են։\n", style: TextStyle(fontWeight: FontWeight.w500, fontSize: 15, color: Color(0xff164866))),
+          // TextSpan(text: "\n"),
+          TextSpan(text: "Գ. Օգտագործման այլ կանոններ\n"),
+          TextSpan(text: "\n"),
           TextSpan(text: "AutoZone հավելվածի օգտագործման այլ կանոնները սահմանվում են հավելվածի համապատասխան հրահանգներով։\n", style: TextStyle(fontWeight: FontWeight.w500, fontSize: 15, color: Color(0xff164866)))
         ]
       )

@@ -37,7 +37,7 @@ class CTAbutton extends StatelessWidget{
           text,
           style: const TextStyle(
             fontWeight: FontWeight.w700,
-            fontSize: 18
+            fontSize: 15
           ),
         ),
       ),

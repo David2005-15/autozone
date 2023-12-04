@@ -35,7 +35,7 @@ class ONPRIMbutton extends StatelessWidget{
           text,
           style: const TextStyle(
             fontWeight: FontWeight.w700,
-            fontSize: 12
+            fontSize: 14
           ),
         ),
       ),

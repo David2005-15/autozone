@@ -3,7 +3,7 @@ description: A new Flutter project.
 
 publish_to: 'none'
 
-version: 1.0.0+1
+version: 1.0.0+31
 
 environment:
   sdk: '>=3.1.0 <4.0.0'
@@ -16,6 +16,7 @@ dependencies:
   kfx_dependency_injection: ^1.6.0
   flutter_verification_code: ^1.1.7
   material_symbols_icons: ^4.2671.0
+  change_app_package_name: ^1.1.0
   shared_preferences: ^2.2.1
   freezed: ^2.4.2
   dio: ^5.3.2
@@ -34,6 +35,20 @@ dependencies:
   image_picker: ^1.0.4
   connectivity: ^3.0.6
   table_calendar: ^3.0.9
+  cached_network_image: ^3.3.0
+  screenshot: ^2.1.0
+  share_plus: ^7.2.1
+  awesome_notifications: ^0.8.2
+  http: ^1.1.0
+  firebase_dynamic_links: ^5.4.5
+  flutter_launcher_icons: ^0.13.1
+
+flutter_icons:
+  android: true
+  ios: true
+  adaptive_icon_foreground: "assets/AppLogo/play_store_512.png"
+  adaptive_icon_background: "#ffffff"
+  image_path: "assets/AppLogo/logo.png"
 
 dev_dependencies:
   flutter_test:
@@ -63,4 +78,5 @@ flutter:
     - assets/Message/
     - assets/UploadImage.png
     - assets/Settings/
+    - assets/AppLogo/
     

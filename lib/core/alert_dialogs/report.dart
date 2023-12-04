@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-void showReportDialog(BuildContext context, int recieverId) {
+void showReportDialog(BuildContext context, int recieverId, {VoidCallback? onApprove}) {
   TextEditingController controller = TextEditingController();
 
   showDialog(
@@ -14,12 +14,11 @@ void showReportDialog(BuildContext context, int recieverId) {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               Container(
-                margin: const EdgeInsets.only(top: 10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                margin: const EdgeInsets.only(top: 20),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    const SizedBox(),
-                    const Row(
+                    Row(
                       children: <Widget>[
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -43,25 +42,6 @@ void showReportDialog(BuildContext context, int recieverId) {
                         )
                       ],
                     ),
-                    Container(
-                      width: 30,
-                      height: 30,
-                      margin: const EdgeInsets.only(right: 10),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                          color: const Color(0xff164866),
-                          borderRadius: BorderRadius.circular(3)),
-                      child: IconButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        icon: const Icon(
-                          Icons.close,
-                          color: Colors.white,
-                          size: 15,
-                        ),
-                      ),
-                    ),
                   ],
                 ),
               ),
@@ -80,9 +60,10 @@ void showReportDialog(BuildContext context, int recieverId) {
                     color: const Color(0xffF3F4F6)),
                 child: TextField(
                   controller: controller,
+                  textAlignVertical: TextAlignVertical.center,
                   style: const TextStyle(
                     color: Color(0XFF164866),
-                    fontSize: 15,
+                    fontSize: 13,
                     fontWeight: FontWeight.w700,
                   ),
                   maxLines: null,
@@ -90,11 +71,11 @@ void showReportDialog(BuildContext context, int recieverId) {
                   decoration: const InputDecoration(
                       border: InputBorder.none,
                       contentPadding:
-                          EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          EdgeInsets.symmetric(horizontal: 10, vertical: 50),
                       hintText: 'Ներկայացնել խնդիրը',
                       hintStyle: TextStyle(
                         color: Color(0XFFE2E2E2),
-                        fontSize: 15,
+                        fontSize: 13,
                         fontWeight: FontWeight.w700,
                       )),
                 ),
@@ -123,6 +104,10 @@ void showReportDialog(BuildContext context, int recieverId) {
                       ));
 
                   Navigator.pop(context);
+
+                  if(onApprove != null) {
+                    onApprove();
+                  }
                 },
                 child: Container(
                   width: 135,

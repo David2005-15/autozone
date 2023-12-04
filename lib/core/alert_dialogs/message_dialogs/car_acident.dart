@@ -9,8 +9,9 @@ void carAcident(BuildContext context, String carNumber, VoidCallback sendApi) {
         return Dialog(
           insetPadding: const EdgeInsets.all(10),
           child: Container(
-            padding:
-                const EdgeInsets.only(bottom: 10, ),
+            padding: const EdgeInsets.only(
+              bottom: 10,
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
@@ -18,16 +19,17 @@ void carAcident(BuildContext context, String carNumber, VoidCallback sendApi) {
                 Container(
                   height: 70,
                   alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: const Color(0xffF3F4F6),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                  decoration: const BoxDecoration(
+                      color: Color(0xffF3F4F6),
+                      borderRadius: BorderRadius.only(
+                          topRight: Radius.circular(5),
+                          topLeft: Radius.circular(5))),
                   child: Text(
                     "$carNumber մեքենայի վարորդ, Ձեր մեքենան վթարվել է։",
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       fontWeight: FontWeight.w700,
-                      fontSize: 15,
+                      fontSize: 14,
                       color: Color(0xff164866),
                     ),
                   ),
@@ -35,14 +37,10 @@ void carAcident(BuildContext context, String carNumber, VoidCallback sendApi) {
                 const SizedBox(
                   height: 10,
                 ),
-                const Padding(
-                  padding:
-                      EdgeInsets.only(top: 10, bottom: 10, right: 20, left: 20),
-                  child: Image(
-                    image: AssetImage("assets/Message/2.png"),
-                    height: 58,
-                    width: 200,
-                  ),
+                const Image(
+                  image: AssetImage("assets/Message/2.png"),
+                  height: 150,
+                  width: 200,
                 ),
                 const SizedBox(
                   height: 10,
@@ -50,7 +48,7 @@ void carAcident(BuildContext context, String carNumber, VoidCallback sendApi) {
                 ButtonFactory.createButton("cta_green", "Ուղարկել", () {
                   Navigator.pop(context);
                   sendApi();
-                  success(context, "Հաղորդագրությունն ուղարկված է");
+                  // success(context, "Հաղորդագրությունն\nուղարկված է");
                 }, double.infinity, 42,
                     margin: const EdgeInsets.only(left: 20, right: 20, top: 5)),
                 const SizedBox(

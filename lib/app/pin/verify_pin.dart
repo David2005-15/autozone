@@ -2,8 +2,10 @@ import 'package:autozone/app/home/home_page.dart';
 import 'package:autozone/core/widgets/keyboard/keyboard.dart';
 import 'package:autozone/core/widgets/inputs/pin_input.dart';
 import 'package:autozone/domain/pin_repo/ipin_repo.dart';
+import 'package:autozone/domain/registration/iregistration.dart';
 import 'package:flutter/material.dart';
 import 'package:kfx_dependency_injection/kfx_dependency_injection.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class VerifyPin extends StatefulWidget {
   const VerifyPin({Key? key}) : super(key: key);
@@ -21,6 +23,8 @@ class _VerifyPin extends State<VerifyPin> {
     TextEditingController(),
     TextEditingController()
   ];
+
+  var registrationService = ServiceProvider.required<IRegistration>();
 
   bool isWrongPin = false;
 
@@ -46,75 +50,87 @@ class _VerifyPin extends State<VerifyPin> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
-              Container(height: MediaQuery.of(context).size.height * 0.4,),
+              // Container(height: MediaQuery.of(context).size.height * 0.4,),
+              Container(),
               Column(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Align(
+                          alignment: Alignment.center,
+                          child: PinInput(
+                            contollers: _controllers,
+                            text: "Կրկնել PIN գաղտնաբառը",
+                            onCompleted: () {},
+                          )),
+                      Visibility(
+                        visible: isWrongPin,
+                        child: const Text(
+                          "PIN գաղտնաբառը սխալ է",
+                          style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 12,
+                              color: Colors.red),
+                        ),
+                      )
+                    ],
+                  ),
                   Align(
-                      alignment: Alignment.center,
-                      child: PinInput(
-                        contollers: _controllers,
-                        text: "Կրկնել PIN գաղտնաբառը",
-                        onCompleted: () {},
-                      )),
-                  Visibility(
-                    visible: isWrongPin,
-                    child: const Text(
-                      "PIN գաղտնաբառը սխալ է",
-                      style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 12,
-                          color: Colors.red),
-                    ),
-                  )
-                ],
-              ),
-              Align(
-                  alignment: Alignment.bottomCenter,
-                  child: CustomKeyboard(
-                    onKeyPressed: (v) async {
-                      if (v == 'backspace') {
-                        if (index == 0) return;
-                        index--;
-                        _controllers[index].text = '';
-                      } else {
-                        if (index > 3) return;
-                        _controllers[index].text = v;
-                        index++;
-                      }
-
-                      if (index == 4) {
-                        var pinRepo = ServiceProvider.required<IPinRepo>();
-
-                        bool isValidPin = await pinRepo.verifySavedPin(
-                            _controllers.map((e) => e.text).toList().join(''));
-
-                        
-
-                        if (isValidPin) {
-                          bool success = await pinRepo.savePin(_controllers
-                              .map((e) => e.text)
-                              .toList()
-                              .join(''));
-
-                          if (success) {
-                            Future.delayed(Duration.zero, () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (builder) =>
-                                          const HomePage(isRedirect: false,)));
-                            });
+                      alignment: Alignment.bottomCenter,
+                      child: CustomKeyboard(
+                        onKeyPressed: (v) async {
+                          if (v == 'backspace') {
+                            if (index == 0) return;
+                            index--;
+                            _controllers[index].text = '';
+                          } else {
+                            if (index > 3) return;
+                            _controllers[index].text = v;
+                            index++;
                           }
-                        } else {
-                          setState(() {
-                            isWrongPin = true;
-                          });
-                        }
-                      }
-                    },
-                    isForgot: false,
-                  ))
+
+                          var prefs = await SharedPreferences.getInstance();
+
+                          if (index == 4) {
+                            var pinRepo = ServiceProvider.required<IPinRepo>();
+
+                            bool isValidPin = await pinRepo.verifySavedPin(
+                                _controllers
+                                    .map((e) => e.text)
+                                    .toList()
+                                    .join(''));
+
+                            if (isValidPin) {
+                              bool success = await pinRepo.savePin(_controllers
+                                  .map((e) => e.text)
+                                  .toList()
+                                  .join(''));
+
+                              if (success) {
+                                registrationService.verifyUser(prefs.getString("phone") ?? "",
+                                    _controllers.map((e) => e.text).join(''));
+
+                                Future.delayed(Duration.zero, () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (builder) => const HomePage(
+                                                isRedirect: false,
+                                              )));
+                                });
+                              }
+                            } else {
+                              setState(() {
+                                isWrongPin = true;
+                              });
+                            }
+                          }
+                        },
+                        isForgot: false,
+                      )),
+                ],
+              )
             ],
           )),
     );

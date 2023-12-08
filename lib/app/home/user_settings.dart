@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'package:auto_size_text/auto_size_text.dart';
 
 class UserSettings extends StatefulWidget {
   final String name;
@@ -260,13 +261,15 @@ class _UserSettingsState extends State<UserSettings> {
                 ),
                 Container(
                   margin: const EdgeInsets.only(left: 19),
-                  child: Text(
+                  child: AutoSizeText(
                     title,
                     style: const TextStyle(
                       fontWeight: FontWeight.w700,
-                      fontSize: 15,
                       color: Color(0xff164866),
                     ),
+                    maxLines: 1,
+                    minFontSize: 11,
+                    maxFontSize: 16
                   ),
                 ),
               ],

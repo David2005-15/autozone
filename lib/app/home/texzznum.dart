@@ -63,13 +63,6 @@ class _TexPageState extends State<TexPage> {
       "userID": widget.data.user_id,
       "car_reg_no": widget.data.autoNumber
     };
-
-    String generatedUrl =
-        await FirebaseDynamicLink.createDynamicLink(widget.data);
-
-    print("_____________________");
-    print(generatedUrl);
-
     var response = await dio.post(
         "https://autozone.onepay.am/api/v1/techPayment/getOrders",
         data: body,
@@ -82,6 +75,12 @@ class _TexPageState extends State<TexPage> {
         payInfo = response.data["payInfo"];
       });
     }
+
+    String generatedUrl =
+        await FirebaseDynamicLink.createDynamicLink(widget.data);
+
+    print("_____________________");
+    print(generatedUrl);
   }
 
   String getStringFromPayStatus(int status) {
@@ -284,21 +283,21 @@ class _TexPageState extends State<TexPage> {
             const SizedBox(
               height: 25,
             ),
+            const Text(
+              "Գործարքների պատմություն",
+              style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16,
+                  color: Color(0xff164866)),
+            ),
+            const SizedBox(
+              height: 20,
+            ),
             payInfo.isNotEmpty
                 ? Expanded(
                     child: SingleChildScrollView(
                       child: Column(
                         children: <Widget>[
-                          const Text(
-                            "Գործարքների պատմություն",
-                            style: TextStyle(
-                                fontWeight: FontWeight.w700,
-                                fontSize: 16,
-                                color: Color(0xff164866)),
-                          ),
-                          const SizedBox(
-                            height: 20,
-                          ),
                           for (int i = 0; i < payInfo.length; i++)
                             Container(
                               margin: const EdgeInsets.only(bottom: 16),

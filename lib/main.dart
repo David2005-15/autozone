@@ -15,6 +15,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 var firebaseMessaging = FirebaseMessaging.instance;
 
+@pragma("vm:entry-point")
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await AwesomeNotifications().initialize(
       null, //'resource://drawable/res_app_icon',//

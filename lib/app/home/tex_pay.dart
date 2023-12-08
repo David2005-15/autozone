@@ -1,4 +1,3 @@
-import 'package:autozone/app/home/home_page.dart';
 import 'package:autozone/core/alert_dialogs/fail.dart';
 import 'package:autozone/core/alert_dialogs/loading_alert.dart';
 import 'package:autozone/core/factory/button_factory.dart';
@@ -105,10 +104,6 @@ class _TexPay extends State<TexPay> {
     if (isElectroCar) {
       coSwitch = false;
     }
-
-    // if(serviceToPay != null && serviceToPay[0]["amounts"]["data"][0]["amount"] <= 0) {
-    //   coSwitch = false;
-    // }
 
     return Scaffold(
       appBar: AppBar(
@@ -222,7 +217,8 @@ class _TexPay extends State<TexPay> {
                                     payServicesId.add(serviceToPay[1]["id"]);
                                   }
                                 } else {
-                                  fail(context, "Էլեկտրական կամ հիբրիդային շարժիչով մեքենաները ազատված են բնապահպանական հարկի վճարից։");
+                                  fail(context,
+                                      "Էլեկտրական կամ հիբրիդային շարժիչով մեքենաները ազատված են բնապահպանական հարկի վճարից։");
                                 }
                                 // coSwitch = val!;
 
@@ -328,13 +324,6 @@ class _TexPay extends State<TexPay> {
                           await launchUrl(
                               Uri.parse(response.data["order"]["formUrl"]));
                           Navigator.pop(context);
-
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => HomePage(
-                                        isRedirect: false,
-                                      )));
                         }
                       } catch (e) {
                         setState(() {
@@ -344,7 +333,7 @@ class _TexPay extends State<TexPay> {
                         Navigator.pop(context);
 
                         // ignore: use_build_context_synchronously
-                        fail(context, "Գործարքը մերժված է");
+                        fail(context, response.data["warning"]);
                       }
                     }, double.infinity, 48,
                         margin: const EdgeInsets.only(

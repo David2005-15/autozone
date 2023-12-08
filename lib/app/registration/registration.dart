@@ -62,6 +62,8 @@ class _RegistrationState extends State<Registration> {
     super.dispose();
   }
 
+  int countOfClicks = 0;
+
   @override
   Widget build(BuildContext context) {
     return hasInternet
@@ -87,7 +89,11 @@ class _RegistrationState extends State<Registration> {
       alignment: Alignment.topCenter,
       child: Container(
           margin: const EdgeInsets.only(top: 100),
-          child: const Image(image: AssetImage("assets/Settings/Logo2.png"), width: 171, height: 40,)),
+          child: const Image(
+            image: AssetImage("assets/Settings/Logo2.png"),
+            width: 171,
+            height: 40,
+          )),
     );
   }
 
@@ -137,30 +143,37 @@ class _RegistrationState extends State<Registration> {
                 "Առաջ",
                 isButtonEnabled
                     ? () async {
-                        var prefs = await SharedPreferences.getInstance();
-                        print(prefs.getKeys());
+                        // var prefs = await SharedPreferences.getInstance();
+                        // print(prefs.getKeys());
 
-                        RegistrationState registrationState =
-                            await registrationService
-                                .registerUser(_phoneNumberController.text);
+                        RegistrationState registrationState;
 
-                        if (registrationState == RegistrationState.regiter) {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => OtpVerification(
-                                        number: _phoneNumberController.text,
-                                      )));
-                        } else if (registrationState ==
-                            RegistrationState.login) {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      const PinAuthorization()));
+                        if (countOfClicks == 0) {
+                          setState(() {
+                            countOfClicks++;
+                          });
+
+                          registrationState = await registrationService
+                              .registerUser(_phoneNumberController.text);
+
+                          if (registrationState == RegistrationState.regiter) {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => OtpVerification(
+                                          number: _phoneNumberController.text,
+                                        )));
+                          } else if (registrationState ==
+                              RegistrationState.login) {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        const PinAuthorization()));
+                          }
+
+                          keepPhoneNumberIsStorage(_phoneNumberController.text);
                         }
-
-                        keepPhoneNumberIsStorage(_phoneNumberController.text);
                       }
                     : null,
                 double.infinity,

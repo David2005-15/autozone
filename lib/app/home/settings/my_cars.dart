@@ -339,7 +339,11 @@ class _MyCarsPageState extends State<MyCarsPage> {
                 const SizedBox(
                   height: 40,
                 ),
-                ButtonFactory.createButton("cta_red", "Հեռացնել", () {
+                ButtonFactory.createButton("cta_red", "Հեռացնել", () async {
+                  var prefs = await SharedPreferences.getInstance();
+
+                  prefs.setBool("changes", true);
+
                   Navigator.pop(context);
                   onTap();
                 }, double.infinity, 42,

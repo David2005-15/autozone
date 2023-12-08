@@ -1,11 +1,14 @@
 import 'package:autozone/app/home/location.dart';
 import 'package:autozone/core/alert_dialogs/dahk_exception.dart';
 import 'package:autozone/core/alert_dialogs/report.dart';
+import 'package:autozone/core/alert_dialogs/station_map.dart';
 import 'package:autozone/core/alert_dialogs/success.dart';
 import 'package:autozone/core/factory/message_answer_factory.dart';
 import 'package:autozone/utils/notification_title_by_id.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class NotificationsPage extends StatefulWidget {
@@ -34,9 +37,13 @@ class _NotificationsPageState extends State<NotificationsPage> {
       DatabaseEvent snapshot = await database!.child("messages").once();
       DatabaseEvent insurance_snapshot =
           await database!.child("inspection_due").once();
+      DatabaseEvent paymentInfo =
+          await database!.child("payment_messages").once();
 
       try {
-        final data = snapshot.snapshot.value as Map<dynamic, dynamic>;
+        final data = snapshot.snapshot.value is Map
+            ? snapshot.snapshot.value as Map<dynamic, dynamic>
+            : {};
 
         final documents = data.values.toList().cast<Map<dynamic, dynamic>>();
 
@@ -127,8 +134,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
       }
 
       try {
-        final insurance_data =
-            insurance_snapshot.snapshot.value as Map<dynamic, dynamic>;
+        final insurance_data = insurance_snapshot.snapshot.value is Map
+            ? insurance_snapshot.snapshot.value as Map<dynamic, dynamic>
+            : {};
         final instrance_document =
             insurance_data.values.toList().cast<Map<dynamic, dynamic>>();
 
@@ -144,7 +152,38 @@ class _NotificationsPageState extends State<NotificationsPage> {
             });
           }
         }
-      } catch (e) {}
+      } catch (e) {
+        rethrow;
+      }
+
+      try {
+        final payment_data = paymentInfo.snapshot.value is Map
+            ? paymentInfo.snapshot.value as Map<dynamic, dynamic>
+            : {};
+        final payment_document =
+            payment_data.values.toList().cast<Map<dynamic, dynamic>>();
+
+        for (int i = 0; i < payment_document.length; i++) {
+          if (payment_document[i]["userId"] as int == widget.userId) {
+            setState(() {
+              notifications[payment_document[i]['date']] = buildPaymentStatus(
+                  payment_document[i]["date"],
+                  payment_document[i]["body"],
+                  payment_document[i].containsKey("longitude"),
+                  longitude: payment_document[i].containsKey("longitude")
+                      ? double.parse(payment_document[i]["longitude"])
+                      : 0.0,
+                  latitude: payment_document[i].containsKey("longitude")
+                      ? double.parse(payment_document[i]["latitude"])
+                      : 0.0,
+                  address: payment_document[i]["address"] ?? "",
+                  companyName: payment_document[i]["name"] ?? "");
+            });
+          }
+        }
+      } catch (e) {
+        rethrow;
+      }
 
       List<MapEntry<String, Widget>> entries = notifications.entries.toList();
 
@@ -210,6 +249,108 @@ class _NotificationsPageState extends State<NotificationsPage> {
     setState(() {
       database = FirebaseDatabase.instance.ref();
     });
+  }
+
+  Widget buildPaymentStatus(String date, String title, bool isSuccess,
+      {double? longitude,
+      double? latitude,
+      String? address,
+      String? companyName}) {
+    DateTime parsedDate = DateTime.parse(date);
+    return Container(
+      width: double.infinity,
+      height: 150,
+      padding: const EdgeInsets.only(left: 15, right: 15, top: 10, bottom: 10),
+      decoration: const BoxDecoration(
+          border: Border(
+        bottom: BorderSide(
+          color: Color(0xffF5F5F5),
+          width: 1.0,
+        ),
+      )),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              Container(
+                width: 30,
+                height: 30,
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xffF2F2F4),
+                  // color: Colors.red,
+                  borderRadius: BorderRadius.circular(3),
+                ),
+                child: const Image(
+                  image: AssetImage(
+                    "assets/Settings/Req.png",
+                  ),
+                  width: 15,
+                  height: 15,
+                ),
+              ),
+              const SizedBox(
+                width: 10,
+              ),
+              Text(
+                isSuccess ? "Վճարումն հաստատված է" : "Վճարումը մերժված է",
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 14,
+                  color: Color(0xff164866),
+                ),
+              ),
+            ],
+          ),
+          Text(
+            title,
+            style: const TextStyle(
+              fontWeight: FontWeight.w700,
+              fontSize: 14,
+              color: Color(0xff164866),
+            ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              isSuccess
+                  ? InkWell(
+                      onTap: () {
+                        showMapDialog(context, latitude ?? 0.0,
+                            longitude ?? 0.0, address ?? "", companyName ?? "");
+                      },
+                      child: Container(
+                        width: 150,
+                        height: 35,
+                        decoration: BoxDecoration(
+                            color: const Color(0xff00611E),
+                            borderRadius: BorderRadius.circular(25)),
+                        alignment: Alignment.center,
+                        child: const Text(
+                          "Քարտեզ",
+                          style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                              fontSize: 14),
+                        ),
+                      ),
+                    )
+                  : Container(),
+              Text(
+                "${parsedDate.day.toString().padLeft(2, '0')}.${parsedDate.month}.${parsedDate.year} ${parsedDate.hour.toString().padLeft(2, '0')}:${parsedDate.minute.toString().padLeft(2, '0')}",
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 14,
+                  color: Color(0xff164866),
+                ),
+              )
+            ],
+          )
+        ],
+      ),
+    );
   }
 
   Widget buildPaymentTile(String carNumber, String dueDate, String date,
@@ -431,7 +572,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
               ),
               InkWell(
                 onTap: () {
-                  showReport(context, reqId, recId,  document["date"],
+                  showReport(context, reqId, recId, document["date"],
                       document["seenDate"], widget.userId);
                 },
                 child: Container(
@@ -680,12 +821,32 @@ class _NotificationsPageState extends State<NotificationsPage> {
                               "$key/answer_date": DateTime.now().toString()
                             });
                           } else {
-                            snapshot.ref
-                                .update({"$key/answer": "Շուտով կմոտենամ"});
-                            snapshot.ref.update({
-                              "$key/answer_date": DateTime.now().toString()
-                            });
-                            
+                            // snapshot.ref
+                            //     .update({"$key/answer": "Շուտով կմոտենամ"});
+                            // snapshot.ref.update({
+                            //   "$key/answer_date": DateTime.now().toString()
+                            // });
+
+                            if (document["issue_type"] == "open_door" ||
+                                document["issue_type"] == "light_is_on") {
+                              snapshot.ref.update({
+                                "$key/answer": "Շնորհակալություն",
+                                "$key/answer_date":
+                                    DateTime.now().toString()
+                              });
+
+                              sendMessage(document["requested_user_id"] as int,
+                                  "AutoZone", "Շնորհակալություն");
+                            } else {
+                              snapshot.ref.update({
+                                "$key/answer": "Շուտով կմոտենամ",
+                                "$key/answer_date":
+                                    DateTime.now().toString()
+                              });
+
+                              sendMessage(document["requested_user_id"] as int,
+                                  "AutoZone", "Շուտով կմոտենամ");
+                            }
                           }
                           Navigator.pop(context);
 
@@ -787,6 +948,24 @@ class _NotificationsPageState extends State<NotificationsPage> {
     );
   }
 }
+
+Future sendMessage(int recieverId, String title, String body) async {
+    var prefs = await SharedPreferences.getInstance();
+    var message = {"receiverId": recieverId, "title": title, "body": body};
+
+    Dio dio = Dio();
+
+    await dio.post(
+      "https://autozone.onepay.am/api/v1/notifications/send",
+      data: message,
+      options: Options(
+        headers: {"Authorization": "Bearer ${prefs.getString("token")}"},
+        validateStatus: (status) {
+          return true;
+        },
+      ),
+    );
+  }
 
 void showReport(BuildContext context, int requestId, int issueId, String date,
     String answerDate, int userId) {

@@ -8,6 +8,8 @@ import 'package:autozone/app/home/texzznum.dart';
 import 'package:autozone/app/home/user_settings.dart';
 import 'package:autozone/app/no_internet.dart';
 import 'package:autozone/core/alert_dialogs/inspection_day.dart';
+import 'package:autozone/core/alert_dialogs/loading_alert.dart';
+import 'package:autozone/core/alert_dialogs/new_app_version.dart';
 import 'package:autozone/core/alert_dialogs/report.dart';
 import 'package:autozone/core/alert_dialogs/success.dart';
 import 'package:autozone/core/factory/message_answer_factory.dart';
@@ -25,6 +27,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:in_app_update/in_app_update.dart';
 import 'package:kfx_dependency_injection/kfx_dependency_injection.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:autozone/app/registration/registration.dart';
@@ -117,6 +120,8 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     checkDate();
+    // Future.delayed(Duration(seconds: 2), () {updateDialog(context);});
+    // updateDialog(context);
 
     FirebaseDynamicLink.initDynamicLink(context);
 
@@ -209,18 +214,24 @@ class _HomePageState extends State<HomePage> {
                         "${snapshot.key}/answer": "Շնորհակալություն",
                         "${snapshot.key}/answer_date": DateTime.now().toString()
                       });
+
+                      sendMessage(value["requested_user_id"] as int, "AutoZone",
+                        "Շնորհակալություն");
                     } else {
                       snapshot.ref.update({
                         "${snapshot.key}/answer": "Շուտով կմոտենամ",
                         "${snapshot.key}/answer_date": DateTime.now().toString()
                       });
+
+                      sendMessage(value["requested_user_id"] as int, "AutoZone",
+                        "Շուտով կմոտենամ");
                     }
                     // snapshot.ref.update({
                     //   "${snapshot.key}/answer_date": DateTime.now().toString()
                     // });
 
-                    sendMessage(value["requested_user_id"] as int, "AutoZone",
-                        "Շուտով կմոտենամ");
+                    // sendMessage(value["requested_user_id"] as int, "AutoZone",
+                    //     "Շուտով կմոտենամ");
                   }
 
                   success(context, "Հաղորդագրությունն\nուղարկված է");
@@ -735,19 +746,40 @@ class _HomePageState extends State<HomePage> {
     return "";
   }
 
+  AppUpdateInfo? _updateInfo;
+
+  Future<void> checkForUpdate() async {
+    InAppUpdate.checkForUpdate().then((info) {
+      setState(() {
+        _updateInfo = info;
+        if (info.flexibleUpdateAllowed) {
+          updateDialog(context, () {
+            InAppUpdate.performImmediateUpdate();
+          });
+        }
+      });
+    }).catchError((e) {
+      // updateDialog(context);
+    });
+  }
+
   Future getAutoList() async {
     var prefs = await SharedPreferences.getInstance();
 
-    // bool isLoading = false;
+    bool isLoading = false;
 
-    // if (autos.isEmpty) {
-    //   WidgetsBinding.instance.addPostFrameCallback((_) {
-    //     setState(() {
-    //       isLoading = true;
-    //     });
-    //     loading(context);
-    //   });
-    // }
+    bool isThereChange = prefs.getBool("changes") ?? false;
+
+    if (autos.isEmpty || isThereChange) {
+      prefs.setBool("changes", false);
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        setState(() {
+          isLoading = true;
+        });
+        loading(context);
+      });
+    }
 
     var result =
         await dio.get("https://autozone.onepay.am/api/v1/users/getData",
@@ -758,8 +790,18 @@ class _HomePageState extends State<HomePage> {
               },
             ));
 
+    if (isLoading) {
+      Navigator.pop(context);
+    }
+
+    await checkForUpdate();
+
     setState(() {
       autos = result.data["User"]["Cars"];
+
+      if (result.data["User"]["id"] != null) {
+        userId = result.data["User"]["id"];
+      }
 
       if (autos.isEmpty) {
         doHaveCar = false;

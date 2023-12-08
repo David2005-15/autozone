@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 
 class FirebaseDynamicLink {
   static Future<String> createDynamicLink(TexPageData data) async {
+    print(
+        "https://autozone.onepay.am/pay?autoNumber=${data.autoNumber}&regNumber=${data.regNumber}&inspectionDate=${data.inspectionDate}&userId=${data.user_id}&dahk=${data.dahk}");
+
     final dynamicLinkParams = DynamicLinkParameters(
       link: Uri.parse(
           "https://autozone.onepay.am/pay?autoNumber=${data.autoNumber}&regNumber=${data.regNumber}&inspectionDate=${data.inspectionDate}&userId=${data.user_id}&dahk=${data.dahk}"),

@@ -3,6 +3,7 @@ import 'package:autozone/core/alert_dialogs/loading_alert.dart';
 import 'package:autozone/core/factory/button_factory.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class TexPay extends StatefulWidget {
@@ -38,13 +39,19 @@ class _TexPay extends State<TexPay> {
   void setServiceToPay() async {
     Dio dio = Dio();
 
-    var body = {"techNumber": widget.regNumber};
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      loading(context);
+    });
+
+    var body = {"techNumber": widget.regNumber, "station": widget.station};
 
     var response = await dio.post(
         "https://autozone.onepay.am/api/v1/techPayment/getServicesForPay",
         data: body, options: Options(validateStatus: (status) {
       return true;
     }));
+
+    Navigator.pop(context);
 
     if (response.data["success"] as bool == true) {
       setState(() {
@@ -220,22 +227,6 @@ class _TexPay extends State<TexPay> {
                                   fail(context,
                                       "Էլեկտրական կամ հիբրիդային շարժիչով մեքենաները ազատված են բնապահպանական հարկի վճարից։");
                                 }
-                                // coSwitch = val!;
-
-                                // if (!coSwitch) {
-                                //   currentAmount -= coSum;
-                                //   payServicesId.remove(serviceToPay[0]["id"]);
-                                // } else {
-                                //   currentAmount += coSum;
-                                //   payServicesId.add(serviceToPay[0]["id"]);
-                                // }
-
-                                // if (coSwitch == false &&
-                                //     texPaymentSwitch == false) {
-                                //   texPaymentSwitch = true;
-                                //   currentAmount += texSum;
-                                //   payServicesId.add(serviceToPay[1]["id"]);
-                                // }
                               });
                             }),
                             buildPaySections(
@@ -293,6 +284,10 @@ class _TexPay extends State<TexPay> {
                         return;
                       }
 
+                      var prefs = await SharedPreferences.getInstance();
+
+                      String url = prefs.getString("url") ?? "";
+
                       setState(() {
                         haveAlreadyClicked = true;
                       });
@@ -302,7 +297,8 @@ class _TexPay extends State<TexPay> {
                       var body = {
                         "techNumber": widget.regNumber,
                         "station": widget.station,
-                        "services": payServicesId
+                        "services": payServicesId,
+                        "redirectUri": url
                       };
 
                       loading(context);
@@ -319,12 +315,15 @@ class _TexPay extends State<TexPay> {
                       });
 
                       try {
-                        if (await canLaunchUrl(
-                            Uri.parse(response.data["order"]["formUrl"]))) {
-                          await launchUrl(
-                              Uri.parse(response.data["order"]["formUrl"]));
-                          Navigator.pop(context);
-                        }
+                        // if (await canLaunchUrl(
+                        //     Uri.parse(response.data["order"]["formUrl"]))) {
+                        //   // await launchUrl(
+                        //   //     Uri.parse(response.data["order"]["formUrl"]));
+                        //   // Navigator.pop(context);
+                        // }
+                        await launchUrl(
+                            Uri.parse(response.data["order"]["formUrl"]));
+                        Navigator.pop(context);
                       } catch (e) {
                         setState(() {
                           haveAlreadyClicked = true;
@@ -334,6 +333,10 @@ class _TexPay extends State<TexPay> {
 
                         // ignore: use_build_context_synchronously
                         fail(context, response.data["warning"]);
+
+                        setState(() {
+                          haveAlreadyClicked = false;
+                        });
                       }
                     }, double.infinity, 48,
                         margin: const EdgeInsets.only(

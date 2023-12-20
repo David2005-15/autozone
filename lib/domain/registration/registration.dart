@@ -23,7 +23,7 @@ class Registration implements IRegistration {
         result.data["success"] as bool == true) {
       var prefs = await SharedPreferences.getInstance(); 
 
-      await prefs.setString("token", result.data["User"]["token"]);
+      prefs.setString("token", result.data["User"]["token"]);
 
       return DefaultState.success;
     }

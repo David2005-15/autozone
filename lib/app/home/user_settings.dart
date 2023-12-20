@@ -8,7 +8,6 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
 import 'package:auto_size_text/auto_size_text.dart';
 
 class UserSettings extends StatefulWidget {
@@ -22,7 +21,7 @@ class UserSettings extends StatefulWidget {
     required this.name,
     required this.email,
     required this.phoneNumber,
-    required this.cars,
+    required this.cars
   }) : super(key: key);
 
   @override
@@ -108,7 +107,6 @@ class _UserSettingsState extends State<UserSettings> {
         ));
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -148,6 +146,53 @@ class _UserSettingsState extends State<UserSettings> {
         ],
       ),
     );
+  }
+
+  void showRemoveAccountDialog() {
+    showDialog(
+        context: context,
+        builder: ((context) {
+          return Dialog(
+            insetPadding: const EdgeInsets.all(10),
+            child: SizedBox(
+                height: 226,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      height: 30,
+                    ),
+                    Container(
+                      margin: const EdgeInsets.only(left: 5, right: 5),
+                      child: const Text(
+                          "Դուք ցանկանում եք հեռացնել Ձեր անձնական հաշիվը։",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xff164866))),
+                    ),
+                    Container(
+                      width: double.infinity,
+                      height: 35,
+                      margin: const EdgeInsets.only(
+                          left: 60, right: 60, bottom: 34),
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                          color: const Color(0xffFF0000),
+                          borderRadius: BorderRadius.circular(50)),
+                      child: const Text(
+                        "Հեռացնել",
+                        style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                            fontSize: 15),
+                      ),
+                    )
+                  ],
+                )),
+          );
+        }));
   }
 
   InkWell buildImageSection(String? networkImage) {
@@ -261,16 +306,14 @@ class _UserSettingsState extends State<UserSettings> {
                 ),
                 Container(
                   margin: const EdgeInsets.only(left: 19),
-                  child: AutoSizeText(
-                    title,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xff164866),
-                    ),
-                    maxLines: 1,
-                    minFontSize: 11,
-                    maxFontSize: 16
-                  ),
+                  child: AutoSizeText(title,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xff164866),
+                      ),
+                      maxLines: 1,
+                      minFontSize: 11,
+                      maxFontSize: 16),
                 ),
               ],
             ),

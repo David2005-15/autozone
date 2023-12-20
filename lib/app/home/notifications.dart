@@ -47,13 +47,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
         final documents = data.values.toList().cast<Map<dynamic, dynamic>>();
 
-        // documents.sort((a, b) =>
-        //     DateTime.parse(b['date']).compareTo(DateTime.parse(a['date'])));
-
         for (int i = 0; i < documents.length; i++) {
           if (documents[i]["issued_user_id"] as int == widget.userId &&
               documents[i]["answer"].toString().isEmpty) {
-            // print(data.keys.toList()[i]);
             setState(() {
               notifications[documents[i]['date']] = notificationTileAnswer(
                   notificationTitleById(documents[i]['issue_type']),
@@ -109,7 +105,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
             });
           }
 
-          if (documents[i]["answer"].toString().isNotEmpty) {
+          if (documents[i]["answer"].toString().isNotEmpty &&
+              (documents[i]["requested_user_id"] as int == widget.userId ||
+                  documents[i]["issued_user_id"] as int == widget.userId)) {
             setState(() {
               notifications[
                   DateTime.parse(documents[i]['date'])
@@ -166,8 +164,12 @@ class _NotificationsPageState extends State<NotificationsPage> {
         for (int i = 0; i < payment_document.length; i++) {
           if (payment_document[i]["userId"] as int == widget.userId) {
             setState(() {
-              notifications[payment_document[i]['date']] = buildPaymentStatus(
-                  payment_document[i]["date"],
+              DateTime parsed = DateTime.parse(payment_document[i]['date']);
+
+              parsed = parsed.add(const Duration(hours: 4));
+
+              notifications[parsed.toIso8601String()] = buildPaymentStatus(
+                  parsed.toIso8601String(),
                   payment_document[i]["body"],
                   payment_document[i].containsKey("longitude"),
                   longitude: payment_document[i].containsKey("longitude")
@@ -177,7 +179,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
                       ? double.parse(payment_document[i]["latitude"])
                       : 0.0,
                   address: payment_document[i]["address"] ?? "",
-                  companyName: payment_document[i]["name"] ?? "");
+                  companyName: payment_document[i]["name"] ?? "",
+                  titleTile: payment_document[i]["title"] ?? "");
             });
           }
         }
@@ -255,8 +258,18 @@ class _NotificationsPageState extends State<NotificationsPage> {
       {double? longitude,
       double? latitude,
       String? address,
-      String? companyName}) {
+      String? companyName, 
+      required String titleTile}) {
     DateTime parsedDate = DateTime.parse(date);
+
+    DateTime today = DateTime.now();
+
+    bool isToday = parsedDate.year == today.year &&
+        parsedDate.month == today.month &&
+        parsedDate.day == today.day;
+
+    print(parsedDate.hour);
+
     return Container(
       width: double.infinity,
       height: 150,
@@ -295,7 +308,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                 width: 10,
               ),
               Text(
-                isSuccess ? "Վճարումն հաստատված է" : "Վճարումը մերժված է",
+                titleTile,
                 style: const TextStyle(
                   fontWeight: FontWeight.w700,
                   fontSize: 14,
@@ -339,7 +352,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
                     )
                   : Container(),
               Text(
-                "${parsedDate.day.toString().padLeft(2, '0')}.${parsedDate.month}.${parsedDate.year} ${parsedDate.hour.toString().padLeft(2, '0')}:${parsedDate.minute.toString().padLeft(2, '0')}",
+                isToday
+                    ? "Այսօր ${parsedDate.hour.toString().padLeft(2, '0')}:${parsedDate.minute.toString().padLeft(2, '0')}"
+                    : "${parsedDate.day.toString().padLeft(2, '0')}.${parsedDate.month}.${parsedDate.year} ${parsedDate.hour.toString().padLeft(2, '0')}:${parsedDate.minute.toString().padLeft(2, '0')}",
                 style: const TextStyle(
                   fontWeight: FontWeight.w700,
                   fontSize: 14,
@@ -814,7 +829,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
                           if (document["issue_type"] == "car_number") {
                             String answer =
-                                "Խնդրում եմ զանգահարել 0${document["phoneNumber"]} հեռախոսահամարին:";
+                                "Խնդրում եմ զանգահարել ${document["phoneNumber"]} հեռախոսահամարին:";
 
                             snapshot.ref.update({"$key/answer": answer});
                             snapshot.ref.update({
@@ -831,8 +846,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                 document["issue_type"] == "light_is_on") {
                               snapshot.ref.update({
                                 "$key/answer": "Շնորհակալություն",
-                                "$key/answer_date":
-                                    DateTime.now().toString()
+                                "$key/answer_date": DateTime.now().toString()
                               });
 
                               sendMessage(document["requested_user_id"] as int,
@@ -840,8 +854,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                             } else {
                               snapshot.ref.update({
                                 "$key/answer": "Շուտով կմոտենամ",
-                                "$key/answer_date":
-                                    DateTime.now().toString()
+                                "$key/answer_date": DateTime.now().toString()
                               });
 
                               sendMessage(document["requested_user_id"] as int,
@@ -864,7 +877,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
                           if (document["issue_type"] == "car_number") {
                             String answer =
-                                "Խնդրում եմ զանգահարել 0$number հեռախոսահամարին:";
+                                "Խնդրում եմ զանգահարել $number հեռախոսահամարին:";
 
                             snapshot.ref.update({"$key/answer": answer});
                             snapshot.ref.update({
@@ -950,22 +963,22 @@ class _NotificationsPageState extends State<NotificationsPage> {
 }
 
 Future sendMessage(int recieverId, String title, String body) async {
-    var prefs = await SharedPreferences.getInstance();
-    var message = {"receiverId": recieverId, "title": title, "body": body};
+  var prefs = await SharedPreferences.getInstance();
+  var message = {"receiverId": recieverId, "title": title, "body": body};
 
-    Dio dio = Dio();
+  Dio dio = Dio();
 
-    await dio.post(
-      "https://autozone.onepay.am/api/v1/notifications/send",
-      data: message,
-      options: Options(
-        headers: {"Authorization": "Bearer ${prefs.getString("token")}"},
-        validateStatus: (status) {
-          return true;
-        },
-      ),
-    );
-  }
+  await dio.post(
+    "https://autozone.onepay.am/api/v1/notifications/send",
+    data: message,
+    options: Options(
+      headers: {"Authorization": "Bearer ${prefs.getString("token")}"},
+      validateStatus: (status) {
+        return true;
+      },
+    ),
+  );
+}
 
 void showReport(BuildContext context, int requestId, int issueId, String date,
     String answerDate, int userId) {

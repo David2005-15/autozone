@@ -23,17 +23,22 @@ void carNumberAnswer(
 
   var phone = prefs.getString("phone") ?? "";
 
-  if (phone[0] != "0" && phone.length != 9) {
-    phone = "0$phone";
-  }
+  // if (phone[0] != "0" && phone.length != 9) {
+  //   phone = "0$phone";
+  // }
 
-  phone = phone.substring(1);
+  // phone = phone.substring(1);
 
   Future.delayed(Duration.zero, () {
     showDialog(
         context: context,
         builder: (context) {
           return StatefulBuilder(builder: (context, state) {
+            if (phone[0] != "0" && phone.length != 9) {
+              state(() {
+                phone = "0$phone";
+              });
+            }
             return Dialog(
               insetPadding: const EdgeInsets.all(10),
               child: Container(
@@ -77,8 +82,8 @@ void carNumberAnswer(
                         "Տրամադրել հեռախոսահամար",
                         !needToChange
                             ? () {
-                                snapshot.ref
-                                    .update({"$key/phoneNumber": "0$phone"});
+                                // snapshot.ref
+                                //     .update({"$key/phoneNumber": phone});
                                 onApprove(phone);
                               }
                             : null,

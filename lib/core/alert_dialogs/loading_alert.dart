@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-void loading(BuildContext context, {GlobalKey<NavigatorState>? key}) {
+void loading(BuildContext context,
+    {GlobalKey<NavigatorState>? key, String message = "Կատարվում է հարցում"}) {
   showDialog(
       barrierDismissible: false,
       context: context,
@@ -27,11 +28,11 @@ void loading(BuildContext context, {GlobalKey<NavigatorState>? key}) {
                     ),
                   ),
                 ),
-                const Align(
+                Align(
                   alignment: Alignment.bottomCenter,
                   child: Text(
-                    "Կատարվում է հարցում",
-                    style: TextStyle(
+                    message,
+                    style: const TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 14,
                         color: Color(0xff164866)),

@@ -1,22 +1,25 @@
-import 'package:autozone/core/alert_dialogs/error_alert.dart';
+import 'dart:async';
+
 import 'package:autozone/core/alert_dialogs/fail.dart';
 import 'package:autozone/core/alert_dialogs/success.dart';
 import 'package:autozone/core/factory/button_factory.dart';
 import 'package:autozone/core/factory/message_factory.dart';
 import 'package:autozone/core/widgets/inputs/input_box_without_suffix.dart';
+import 'package:autozone/utils/payment_singleton.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
 
 class SearchCarPage extends StatefulWidget {
-  final int userId;
-  final List<String> ownCars;
+  final int? userId;
+  final List<String>? ownCars;
 
-  const SearchCarPage({super.key, required this.userId, required this.ownCars});
+  const SearchCarPage({super.key, this.userId, this.ownCars});
 
   @override
   State<SearchCarPage> createState() => SearchCarPageState();
@@ -75,9 +78,84 @@ class SearchCarPageState extends State<SearchCarPage> {
     });
   }
 
+  void checkDate() async {
+    var prefs = await SharedPreferences.getInstance();
+
+    String? date = prefs.getString("today");
+
+    if (date == null) {
+      prefs.setString("today", DateTime.now().toIso8601String());
+      prefs.setInt("count", 0);
+    } else {
+      DateTime lastDate = DateTime.parse(date);
+
+      if (lastDate.day == DateTime.now().day - 1) {
+        prefs.setString("today", DateTime.now().toIso8601String());
+        prefs.setInt("count", 0);
+      }
+    }
+  }
+
+  Timer? timer;
+
+  int paymentCounter = 5;
+
+  bool isActive = false;
+
+  Future getActivePayment() async {
+    Dio dio = Dio();
+
+    var prefs = await SharedPreferences.getInstance();
+
+    bool isPayment = prefs.getBool("activePayment")!;
+
+    if (isPayment == true) {
+      setState(() {
+        isActive = true;
+      });
+    } else {
+      var result = await dio.get(
+          "https://autozone.onepay.am/api/v1/users/getData",
+          options: Options(
+            headers: {"Authorization": "Bearer ${prefs.getString("token")}"},
+            validateStatus: (status) {
+              return true;
+            },
+          ));
+
+      setState(() {
+        isActive = result.data["User"]["isAcive"] as bool;
+        prefs.setBool("activePayment", isActive);
+
+        paymentSignleton.paymentMethod = isActive;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    timer?.cancel();
+    super.dispose();
+  }
+
+  PaymentSignleton paymentSignleton = PaymentSignleton();
+
   @override
   void initState() {
+    setState(() {
+      isActive = paymentSignleton.isPayment;
+    });
+
+    setState(() {
+      id = widget.userId!;
+      autoList = widget.ownCars!;
+    });
+
+    print(isActive);
+
+    setKeys();
     super.initState();
+    checkDate();
     setTotalCount();
     setTodayDate();
     var database = initFirebaseApp();
@@ -85,7 +163,32 @@ class SearchCarPageState extends State<SearchCarPage> {
     getPhoneNumber();
 
     Future.wait([database, messaging]);
+
+    timer = Timer.periodic(const Duration(seconds: 2), (timer) async {
+      await getActivePayment();
+
+      if (isActive == true) {
+        timer.cancel();
+      }
+
+      paymentCounter--;
+    });
   }
+
+  int id = 0;
+  List<String> autoList = [];
+
+  void setKeys() async {
+    var prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      id = prefs.getInt("userId")!;
+      autoList = prefs.getStringList("autoList")!;
+      isActive = prefs.getBool("activePayment")!;
+    });
+  }
+
+  PaymentType selectedType = PaymentType.none;
 
   @override
   Widget build(BuildContext context) {
@@ -115,41 +218,252 @@ class SearchCarPageState extends State<SearchCarPage> {
                     color: Colors.white,
                     // padding: const EdgeInsets.only(left: 30, right: 30),
                     child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
-                        Container(
-                          margin: const EdgeInsets.only(top: 60),
-                          child: const Image(
-                            image: AssetImage("assets/ParkingSign.png"),
-                            width: 276,
-                            height: 104,
-                          ),
+                        Column(
+                          children: [
+                            Container(
+                              margin: const EdgeInsets.only(top: 60),
+                              child: const Image(
+                                image: AssetImage("assets/ParkingSign.png"),
+                                width: 276,
+                                height: 104,
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 50,
+                            ),
+                            Container(
+                              margin:
+                                  const EdgeInsets.only(left: 20, right: 20),
+                              child: const Text(
+                                "Փնտրիր մեքենան և վարորդին ուղարկիր ծանուցում",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 18,
+                                    color: Color(0xff164866)),
+                              ),
+                            ),
+                            isActive
+                                ? const SizedBox(
+                                    height: 31,
+                                  )
+                                : Container(),
+                            isActive
+                                ? ButtonFactory.createButton(
+                                    "cta_green",
+                                    "Որոնել",
+                                    () {
+                                      setState(() {
+                                        isClickedSearch = true;
+                                      });
+                                    },
+                                    253,
+                                    42,
+                                  )
+                                : Container(),
+                            isActive == false
+                                ? const SizedBox(
+                                    height: 31,
+                                  )
+                                : Container(),
+                            isActive == false
+                                ? const Text(
+                                    "Տարեկան միանվագ վճար",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 16,
+                                      color: Color(0xff164866),
+                                    ),
+                                  )
+                                : Container(),
+                            isActive == false
+                                ? const SizedBox(
+                                    height: 33,
+                                  )
+                                : Container(),
+                            isActive == false
+                                ? Container(
+                                    width: 200,
+                                    height: 35,
+                                    decoration: BoxDecoration(
+                                        color: const Color(0xffF3F4F6),
+                                        borderRadius:
+                                            BorderRadius.circular(25)),
+                                    alignment: Alignment.center,
+                                    child: const Text(
+                                      "500 դր․",
+                                      style: TextStyle(
+                                          fontSize: 16,
+                                          color: Color(0xff164866),
+                                          fontWeight: FontWeight.w700),
+                                    ),
+                                  )
+                                : Container(),
+                            isActive == false
+                                ? const SizedBox(height: 31)
+                                : Container(),
+                            isActive == false
+                                ? Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      InkWell(
+                                          onTap: () {
+                                            setState(() {
+                                              selectedType = PaymentType.idram;
+                                            });
+                                          },
+                                          child: Container(
+                                            width: 20,
+                                            height: 20,
+                                            padding: const EdgeInsets.all(2),
+                                            decoration: BoxDecoration(
+                                                borderRadius:
+                                                    BorderRadius.circular(50),
+                                                border: Border.all(
+                                                    width: 2,
+                                                    color: Colors.blue)),
+                                            child: selectedType ==
+                                                    PaymentType.idram
+                                                ? Container(
+                                                    decoration: BoxDecoration(
+                                                        color: Colors.blue,
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(50)),
+                                                  )
+                                                : const SizedBox(
+                                                    width: 18,
+                                                    height: 18,
+                                                  ),
+                                          )),
+                                      const SizedBox(
+                                        width: 5,
+                                      ),
+                                      InkWell(
+                                        onTap: () {
+                                          setState(() {
+                                            selectedType = PaymentType.idram;
+                                          });
+                                        },
+                                        child: const Image(
+                                          image: AssetImage(
+                                              "assets/Payment/Idram.jpg"),
+                                          width: 80,
+                                          height: 40,
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        width: 20,
+                                      ),
+                                      InkWell(
+                                        onTap: () {
+                                          setState(() {
+                                            selectedType = PaymentType.telcell;
+                                          });
+                                        },
+                                        child: Container(
+                                          width: 20,
+                                          height: 20,
+                                          padding: const EdgeInsets.all(2),
+                                          decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(50),
+                                              border: Border.all(
+                                                  width: 2,
+                                                  color: Colors.blue)),
+                                          child: selectedType ==
+                                                  PaymentType.telcell
+                                              ? Container(
+                                                  decoration: BoxDecoration(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              50),
+                                                      color: Colors.blue),
+                                                )
+                                              : const SizedBox(
+                                                  width: 18,
+                                                  height: 18,
+                                                ),
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        width: 5,
+                                      ),
+                                      InkWell(
+                                        onTap: () {
+                                          setState(() {
+                                            selectedType = PaymentType.telcell;
+                                          });
+                                        },
+                                        child: const Image(
+                                          image: AssetImage(
+                                              "assets/Payment/Telcell.jpg"),
+                                          width: 80,
+                                          height: 40,
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                : Container(),
+                          ],
                         ),
-                        const SizedBox(
-                          height: 50,
-                        ),
-                        Container(
-                          margin: const EdgeInsets.only(left: 20, right: 20),
-                          child: const Text(
-                            "Փնտրիր մեքենան և վարորդին ուղարկիր ծանուցում",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                                fontWeight: FontWeight.w700,
-                                fontSize: 18,
-                                color: Color(0xff164866)),
-                          ),
-                        ),
-                        const SizedBox(height: 31),
-                        ButtonFactory.createButton(
-                          "cta_green",
-                          "Որոնել",
-                          () {
-                            setState(() {
-                              isClickedSearch = true;
-                            });
-                          },
-                          253,
-                          42,
-                        )
+                        !isActive
+                            ? ButtonFactory.createButton(
+                                "cta_green",
+                                "Վճարել",
+                                !(selectedType == PaymentType.none)
+                                    ? () async {
+                                        Dio dio = Dio();
+                                        var prefs = await SharedPreferences
+                                            .getInstance();
+
+                                        var token = prefs.getString("token");
+
+                                        if (selectedType ==
+                                            PaymentType.telcell) {
+                                          var result = await dio.post(
+                                              "https://autozone.onepay.am/api/v1/techPayment/TellcelPayment",
+                                              data: {"amount": 500},
+                                              options: Options(headers: {
+                                                "Authorization": "Bearer $token"
+                                              }));
+                                        } else if (selectedType ==
+                                            PaymentType.idram) {
+                                          var result = await dio.post(
+                                              "https://autozone.onepay.am/api/v1/techPayment/IdramPayment",
+                                              options: Options(headers: {
+                                                "Authorization": "Bearer $token"
+                                              }));
+
+                                          var edpId =
+                                              result.data["id"].toString();
+
+                                          Uri uri = Uri(
+                                            scheme: 'idramapp',
+                                            host: 'payment',
+                                            queryParameters: {
+                                              'receiverName': "AutoZone",
+                                              'receiverId': "110002745",
+                                              'title': edpId,
+                                              'amount': "500",
+                                              'has_tip': 'false',
+                                            },
+                                          );
+
+                                          await launchUrl(uri);
+
+                                          // setState(() {
+                                          //   isActive = true;
+                                          // });
+                                        }
+                                      }
+                                    : null,
+                                253,
+                                42,
+                                margin: const EdgeInsets.only(bottom: 20))
+                            : Container(),
                       ],
                     ),
                   );
@@ -220,7 +534,7 @@ class SearchCarPageState extends State<SearchCarPage> {
                 ButtonFactory.createButton(
                   "cta_green",
                   "Որոնել",
-                  !widget.ownCars.contains(autoNumberController.text) &&
+                  !autoList.contains(autoNumberController.text) &&
                           autoNumberController.text.isNotEmpty
                       ? () async {
                           Dio dio = Dio();
@@ -341,17 +655,17 @@ class SearchCarPageState extends State<SearchCarPage> {
                             count = prefs.getInt("count");
                           }
 
-                          if (count == 2) {
-                            fail(context,
-                                "Դուք կարող եք օրեկան ուղարկել առավելագույնը 2 ծանուցում");
-                            return;
-                          }
+                          // if (count == 2) {
+                          //   failAutoRequest(context,
+                          //       "Դուք կարող եք օրեկան ուղարկել առավելագույնը 2 ծանուցում");
+                          //   return;
+                          // }
 
                           await database
                               .child("messages")
                               .child("message${const Uuid().v4()}")
                               .set({
-                            "requested_user_id": widget.userId,
+                            "requested_user_id": id,
                             "issued_user_id": requestedUserId,
                             "issue_type": "disturb",
                             "car_number": autoNumberController.text,
@@ -394,17 +708,17 @@ class SearchCarPageState extends State<SearchCarPage> {
                             count = prefs.getInt("count");
                           }
 
-                          if (count == 2) {
-                            fail(context,
-                                "Դուք կարող եք օրեկան ուղարկել առավելագույնը 2 ծանուցում");
-                            return;
-                          }
+                          // if (count == 2) {
+                          //   failAutoRequest(context,
+                          //       "Դուք կարող եք օրեկան ուղարկել առավելագույնը 2 ծանուցում");
+                          //   return;
+                          // }
 
                           await database
                               .child("messages")
                               .child("message${const Uuid().v4()}")
                               .set({
-                            "requested_user_id": widget.userId,
+                            "requested_user_id": id,
                             "issued_user_id": requestedUserId,
                             "issue_type": "open_door",
                             "car_number": autoNumberController.text,
@@ -452,17 +766,17 @@ class SearchCarPageState extends State<SearchCarPage> {
                             count = prefs.getInt("count");
                           }
 
-                          if (count == 2) {
-                            fail(context,
-                                "Դուք կարող եք օրեկան ուղարկել առավելագույնը 2 ծանուցում");
-                            return;
-                          }
+                          // if (count == 2) {
+                          //   failAutoRequest(context,
+                          //       "Դուք կարող եք օրեկան ուղարկել առավելագույնը 2 ծանուցում");
+                          //   return;
+                          // }
 
                           await database
                               .child("messages")
                               .child("message${const Uuid().v4()}")
                               .set({
-                            "requested_user_id": widget.userId,
+                            "requested_user_id": id,
                             "issued_user_id": requestedUserId,
                             "issue_type": "acident",
                             "car_number": autoNumberController.text,
@@ -506,17 +820,17 @@ class SearchCarPageState extends State<SearchCarPage> {
                             count = prefs.getInt("count");
                           }
 
-                          if (count == 2) {
-                            fail(context,
-                                "Դուք կարող եք օրեկան ուղարկել առավելագույնը 2 ծանուցում");
-                            return;
-                          }
+                          // if (count == 2) {
+                          //   failAutoRequest(context,
+                          //       "Դուք կարող եք օրեկան ուղարկել առավելագույնը 2 ծանուցում");
+                          //   return;
+                          // }
 
                           await database
                               .child("messages")
                               .child("message${const Uuid().v4()}")
                               .set({
-                            "requested_user_id": widget.userId,
+                            "requested_user_id": id,
                             "issued_user_id": requestedUserId,
                             "issue_type": "light_is_on",
                             "car_number": autoNumberController.text,
@@ -563,17 +877,17 @@ class SearchCarPageState extends State<SearchCarPage> {
                             count = prefs.getInt("count");
                           }
 
-                          if (count == 2) {
-                            fail(context,
-                                "Դուք կարող եք օրեկան ուղարկել առավելագույնը 2 ծանուցում");
-                            return;
-                          }
+                          // if (count == 2) {
+                          //   failAutoRequest(context,
+                          //       "Դուք կարող եք օրեկան ուղարկել առավելագույնը 2 ծանուցում");
+                          //   return;
+                          // }
 
                           await database
                               .child("messages")
                               .child("message${const Uuid().v4()}")
                               .set({
-                            "requested_user_id": widget.userId,
+                            "requested_user_id": id,
                             "issued_user_id": requestedUserId,
                             "issue_type": "evacuation",
                             "car_number": autoNumberController.text,
@@ -614,18 +928,18 @@ class SearchCarPageState extends State<SearchCarPage> {
                             count = prefs.getInt("count");
                           }
 
-                          if (count == 2) {
-                            fail(context,
-                                "Դուք կարող եք օրեկան ուղարկել առավելագույնը 2 ծանուցում");
-                            return;
-                          }
+                          // if (count == 2) {
+                          //   failAutoRequest(context,
+                          //       "Դուք կարող եք օրեկան ուղարկել առավելագույնը 2 ծանուցում");
+                          //   return;
+                          // }
                           success(context, "Հաղորդագրությունն\nուղարկված է");
 
                           await database
                               .child("messages")
                               .child("message${const Uuid().v4()}")
                               .set({
-                            "requested_user_id": widget.userId,
+                            "requested_user_id": id,
                             "issued_user_id": requestedUserId,
                             "issue_type": "car_number",
                             "car_number": autoNumberController.text,
@@ -670,16 +984,16 @@ class SearchCarPageState extends State<SearchCarPage> {
                             count = prefs.getInt("count");
                           }
 
-                          if (count == 2) {
-                            fail(context,
-                                "Դուք կարող եք օրեկան ուղարկել առավելագույնը 2 ծանուցում");
-                            return;
-                          }
+                          // if (count == 2) {
+                          //   failAutoRequest(context,
+                          //       "Դուք կարող եք օրեկան ուղարկել առավելագույնը 2 ծանուցում");
+                          //   return;
+                          // }
                           await database
                               .child("messages")
                               .child("message${const Uuid().v4()}")
                               .set({
-                            "requested_user_id": widget.userId,
+                            "requested_user_id": id,
                             "issued_user_id": requestedUserId,
                             "issue_type": "closed_enterance",
                             "car_number": autoNumberController.text,
@@ -721,17 +1035,17 @@ class SearchCarPageState extends State<SearchCarPage> {
                             count = prefs.getInt("count");
                           }
 
-                          if (count == 2) {
-                            fail(context,
-                                "Դուք կարող եք օրեկան ուղարկել առավելագույնը 2 ծանուցում");
-                            return;
-                          }
+                          // if (count == 2) {
+                          //   failAutoRequest(context,
+                          //       "Դուք կարող եք օրեկան ուղարկել առավելագույնը 2 ծանուցում");
+                          //   return;
+                          // }
 
                           await database
                               .child("messages")
                               .child("message${const Uuid().v4()}")
                               .set({
-                            "requested_user_id": widget.userId,
+                            "requested_user_id": id,
                             "issued_user_id": requestedUserId,
                             "issue_type": "car_hit",
                             "car_number": autoNumberController.text,
@@ -852,3 +1166,5 @@ class SearchCarPageState extends State<SearchCarPage> {
     );
   }
 }
+
+enum PaymentType { idram, telcell, none }

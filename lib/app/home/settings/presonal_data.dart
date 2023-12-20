@@ -1,6 +1,8 @@
+import 'package:autozone/app/registration/registration.dart';
 import 'package:autozone/core/factory/button_factory.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PersonalData extends StatefulWidget {
@@ -150,6 +152,27 @@ class _PersonalDataState extends State<PersonalData> {
               ),
               line(),
               const SizedBox(
+                height: 10,
+              ),
+              Container(
+                  width: double.infinity,
+                  height: 46,
+                  alignment: Alignment.center,
+                  margin: const EdgeInsets.only(top: 20),
+                  decoration: const BoxDecoration(color: Color(0xffF9F9F9)),
+                  child: InkWell(
+                      onTap: () {
+                        showRemoveAccountDialog();
+                      },
+                      child: const Text(
+                        "Հեռացնել անձնական հաշիվը",
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 15,
+                          color: Color(0xffFF0000),
+                        ),
+                      ))),
+              const SizedBox(
                 height: 20,
               ),
               Visibility(
@@ -157,7 +180,7 @@ class _PersonalDataState extends State<PersonalData> {
                 child: ButtonFactory.createButton(
                     "cta_green",
                     "Պահպանել",
-                    nameController.text.isEmpty || emailController.text.isEmpty || !isValidEmail
+                    isClickable(nameController.text, emailController.text)
                         ? null
                         : () async {
                             await updateEmail(
@@ -179,6 +202,94 @@ class _PersonalDataState extends State<PersonalData> {
         ),
       ),
     );
+  }
+
+  bool isClickable(String name, String email) {
+    if (name.isEmpty && email.isEmpty) {
+      return true;
+    }
+
+    if (name.isNotEmpty && email.isEmpty) {
+      return false;
+    }
+
+    if (name.isEmpty && email.isNotEmpty && isValidEmail) {
+      return false;
+    }
+
+    if (name.isNotEmpty && email.isNotEmpty && isValidEmail) {
+      return false;
+    }
+
+    return true;
+  }
+
+  void showRemoveAccountDialog() {
+    showDialog(
+        context: context,
+        builder: ((context) {
+          return Dialog(
+            insetPadding: const EdgeInsets.all(10),
+            child: SizedBox(
+                height: 226,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      height: 30,
+                    ),
+                    Container(
+                      margin: const EdgeInsets.only(left: 5, right: 5),
+                      child: const Text(
+                          "Դուք ցանկանում եք հեռացնել Ձեր անձնական հաշիվը։",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xff164866))),
+                    ),
+                    InkWell(
+                      onTap: () async {
+                        Dio dio = Dio();
+
+                        var prefs = await SharedPreferences.getInstance();
+
+                        var token = prefs.getString("token") ?? "";
+
+                        await dio.delete(
+                            "https://autozone.onepay.am/api/v1/users/deleteUser",
+                            options:
+                                Options(headers: {"Authorization": token}));
+
+                        prefs.clear();
+
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const Registration()));
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        height: 35,
+                        margin: const EdgeInsets.only(
+                            left: 60, right: 60, bottom: 34),
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                            color: const Color(0xffFF0000),
+                            borderRadius: BorderRadius.circular(50)),
+                        child: const Text(
+                          "Հեռացնել",
+                          style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                              fontSize: 15),
+                        ),
+                      ),
+                    )
+                  ],
+                )),
+          );
+        }));
   }
 
   Widget line() {
@@ -293,8 +404,12 @@ class _PersonalDataState extends State<PersonalData> {
                       onChanged: (val) {
                         setState(() {});
                       },
+                      inputFormatters: [
+                        FilteringTextInputFormatter.deny(RegExp("[0-9]"))
+                      ],
                       decoration: const InputDecoration(
                           hintText: "Անուն Ազգանուն", border: InputBorder.none),
+                      keyboardType: TextInputType.name,
                       style: const TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 15,
@@ -357,6 +472,7 @@ class _PersonalDataState extends State<PersonalData> {
                       onChanged: (val) {
                         setState(() {});
                       },
+                      keyboardType: TextInputType.emailAddress,
                       decoration: const InputDecoration(
                           hintText: "էլեկտրոնային հասցե",
                           border: InputBorder.none),
@@ -405,7 +521,7 @@ class _PersonalDataState extends State<PersonalData> {
               child: Container(
             width: double.infinity,
             height: 42,
-            margin: EdgeInsets.only(
+            margin: const EdgeInsets.only(
               right: 68,
               left: 68,
             ),
@@ -441,9 +557,9 @@ class _PersonalDataState extends State<PersonalData> {
             ));
 
     setState(() {
-      name = result.data["User"]["fullName"];
-      email = result.data["User"]["gmail"] ?? "";
       phone = result.data["User"]["phoneNumber"];
+      name = result.data["User"]["fullName"] ?? "";
+      email = result.data["User"]["gmail"] ?? "";
     });
   }
 }

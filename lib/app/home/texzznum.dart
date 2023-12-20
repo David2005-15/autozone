@@ -1,9 +1,13 @@
+import 'dart:async';
+
 import 'package:autozone/app/add_tex_date.dart';
 import 'package:autozone/app/home/location.dart';
 import 'package:autozone/app/payment/payment_status.dart';
 import 'package:autozone/core/alert_dialogs/dahk_exception.dart';
+import 'package:autozone/core/alert_dialogs/fail.dart';
 import 'package:autozone/core/alert_dialogs/info_tex.dart';
 import 'package:autozone/core/alert_dialogs/loading_alert.dart';
+import 'package:autozone/core/alert_dialogs/success.dart';
 import 'package:autozone/core/factory/button_factory.dart';
 import 'package:autozone/domain/new_auto_repo/iauto.dart';
 import 'package:autozone/domain/tex_place_repo/itex_place_repo.dart';
@@ -19,12 +23,14 @@ class TexPageData {
   final String autoNumber;
   final int user_id;
   final bool dahk;
+  bool redirect;
 
-  const TexPageData({
+  TexPageData({
     required this.inspectionDate,
     required this.regNumber,
     required this.autoNumber,
     required this.user_id,
+    required this.redirect,
     required this.dahk,
   });
 }
@@ -46,9 +52,64 @@ class _TexPageState extends State<TexPage> {
 
   bool? dahkVal;
 
+  Timer? timer;
+
+  @override
+  void dispose() {
+    timer?.cancel();
+    super.dispose();
+  }
+
+  Future getAutoList() async {
+    Dio dio = Dio();
+    var prefs = await SharedPreferences.getInstance();
+
+    await dio.get("https://autozone.onepay.am/api/v1/users/getData",
+        options: Options(
+          headers: {"Authorization": "Bearer ${prefs.getString("token")}"},
+          validateStatus: (status) {
+            return true;
+          },
+        ));
+  }
+
   @override
   void initState() {
     setPaymentHistory();
+
+    if (widget.data.redirect) {
+      Future.delayed(const Duration(seconds: 1), () {
+        loading(context, message: "Խնդրում ենք սպասել");
+      });
+
+      timer = Timer.periodic(const Duration(seconds: 10), (timer) async {
+        await setPaymentHistory();
+        await getAutoList();
+
+        var status;
+
+        setState(() {
+          status = statuses.first;
+        });
+
+        if (status == "Մերժվել է" || statuses.first == "Մերժվել է") {
+          Navigator.pop(context);
+
+          Future.delayed(Duration.zero, () {
+            fail(context, "Գործարքը մերժված է");
+          });
+
+          timer.cancel();
+        } else if (status == "Հաստատվել է" || statuses.first == "Հաստատվել է") {
+          Navigator.pop(context);
+
+          Future.delayed(Duration.zero, () {
+            success(context, "Գործարքը հաստատված է");
+          });
+          timer.cancel();
+        }
+      });
+    }
 
     date = widget.data.inspectionDate;
     super.initState();
@@ -56,7 +117,13 @@ class _TexPageState extends State<TexPage> {
 
   List<dynamic> payInfo = [];
 
+  List<String> statuses = [];
+
   Future setPaymentHistory() async {
+    setState(() {
+      statuses = [];
+    });
+
     Dio dio = Dio();
 
     var body = {
@@ -76,11 +143,26 @@ class _TexPageState extends State<TexPage> {
       });
     }
 
-    String generatedUrl =
-        await FirebaseDynamicLink.createDynamicLink(widget.data);
+    payInfo.forEach((element) {
+      setState(() {
+        statuses.add(getStringFromPayStatus(element["status"]));
+      });
+    });
 
-    print("_____________________");
-    print(generatedUrl);
+    var prefs = await SharedPreferences.getInstance();
+
+    if (prefs.getStringList("statuses") == null) {
+      prefs.setStringList("statuses", statuses);
+    }
+
+    TexPageData pageData = widget.data;
+
+    pageData.redirect = true;
+
+    String generatedUrl = await FirebaseDynamicLink.createDynamicLink(pageData);
+
+    prefs.setString("url", generatedUrl);
+
   }
 
   String getStringFromPayStatus(int status) {

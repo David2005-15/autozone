@@ -21,6 +21,7 @@ import 'package:autozone/firebase_dynamic_link.dart';
 import 'package:autozone/utils/firebase_app.dart';
 import 'package:autozone/utils/image_cache.dart';
 import 'package:autozone/utils/location_cache_manager.dart';
+import 'package:autozone/utils/payment_singleton.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -71,6 +72,7 @@ class _HomePageState extends State<HomePage> {
 
   LocationsCacheManager manager = LocationsCacheManager();
   ImageCacheManager imageCache = ImageCacheManager();
+  PaymentSignleton paymentSignleton = PaymentSignleton();
 
   Future<void> initConnectivity() async {
     ConnectivityResult status;
@@ -117,13 +119,19 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  void stringUrl() {
+    FirebaseDynamicLink.createDynamicLinkForIdram();
+  }
+
   @override
   void initState() {
+    stringUrl();
     checkDate();
     // Future.delayed(Duration(seconds: 2), () {updateDialog(context);});
     // updateDialog(context);
 
     FirebaseDynamicLink.initDynamicLink(context);
+    // FirebaseDynamicLink.initDramPayment(context, searchCarPageKey);
 
     manager.setProvince();
     imageCache.getUserImage();
@@ -195,7 +203,7 @@ class _HomePageState extends State<HomePage> {
 
                   if (value["issue_type"] == "car_number") {
                     String answer =
-                        "Խնդրում եմ զանգահարել 0${value["phoneNumber"]} հեռախոսահամարին:";
+                        "Խնդրում եմ զանգահարել ${value["phoneNumber"]} հեռախոսահամարին:";
 
                     snapshot.ref.update({
                       "${snapshot.key}/answer": answer,
@@ -206,7 +214,7 @@ class _HomePageState extends State<HomePage> {
                     // });
 
                     sendMessage(value["requested_user_id"] as int, "AutoZone",
-                        "Խնդրում եմ զանգահարել 0${value["phoneNumber"]} հեռախոսահամարին:");
+                        "Խնդրում եմ զանգահարել ${value["phoneNumber"]} հեռախոսահամարին:");
                   } else {
                     if (value["issue_type"] == "open_door" ||
                         value["issue_type"] == "light_is_on") {
@@ -216,7 +224,7 @@ class _HomePageState extends State<HomePage> {
                       });
 
                       sendMessage(value["requested_user_id"] as int, "AutoZone",
-                        "Շնորհակալություն");
+                          "Շնորհակալություն");
                     } else {
                       snapshot.ref.update({
                         "${snapshot.key}/answer": "Շուտով կմոտենամ",
@@ -224,14 +232,8 @@ class _HomePageState extends State<HomePage> {
                       });
 
                       sendMessage(value["requested_user_id"] as int, "AutoZone",
-                        "Շուտով կմոտենամ");
+                          "Շուտով կմոտենամ");
                     }
-                    // snapshot.ref.update({
-                    //   "${snapshot.key}/answer_date": DateTime.now().toString()
-                    // });
-
-                    // sendMessage(value["requested_user_id"] as int, "AutoZone",
-                    //     "Շուտով կմոտենամ");
                   }
 
                   success(context, "Հաղորդագրությունն\nուղարկված է");
@@ -241,18 +243,16 @@ class _HomePageState extends State<HomePage> {
 
                   if (value["issue_type"] == "car_number") {
                     String answer =
-                        "Խնդրում եմ զանգահարել 0$number հեռախոսահամարին:";
+                        "Խնդրում եմ զանգահարել $number հեռախոսահամարին:";
 
                     snapshot.ref.update({
+                      "${snapshot.key}/phoneNumber": number,
                       "${snapshot.key}/answer": answer,
                       "${snapshot.key}/answer_date": DateTime.now().toString()
                     });
-                    // // snapshot.ref.update({
-                    // //   "${snapshot.key}/answer_date": DateTime.now().toString()
-                    // });
 
                     sendMessage(value["requested_user_id"] as int, "AutoZone",
-                        "Խնդրում եմ զանգահարել 0$number հեռախոսահամարին:");
+                        "Խնդրում եմ զանգահարել $number հեռախոսահամարին:");
                   } else {
                     snapshot.ref.update({
                       "${snapshot.key}/answer": "Շուտով կմոտենամ",
@@ -449,6 +449,8 @@ class _HomePageState extends State<HomePage> {
               setState(() {
                 _navigationBarPage = 0;
               });
+
+              getAutoList();
             },
             child: const Image(
               image: AssetImage("assets/Settings/BackIcon.png"),
@@ -677,6 +679,7 @@ class _HomePageState extends State<HomePage> {
                               onTap: () {
                                 TexPageData data = TexPageData(
                                     inspectionDate: autoTexDates[_selected],
+                                    redirect: false,
                                     regNumber: selectedTechNumber,
                                     autoNumber: selectedAutoNumber,
                                     user_id: userId,
@@ -718,7 +721,8 @@ class _HomePageState extends State<HomePage> {
                       name: name,
                       email: email,
                       phoneNumber: phoneNumber,
-                      cars: [])
+                      cars: [],
+                    )
                   : SearchCarPage(
                       userId: userId,
                       ownCars: currentAutoNumbers,
@@ -796,12 +800,19 @@ class _HomePageState extends State<HomePage> {
 
     await checkForUpdate();
 
+    bool activePayment = false;
+
     setState(() {
       autos = result.data["User"]["Cars"];
+      autoImagePath = [];
 
       if (result.data["User"]["id"] != null) {
         userId = result.data["User"]["id"];
       }
+
+      activePayment = result.data["User"]["isAcive"] as bool;
+
+      paymentSignleton.paymentMethod = activePayment;
 
       if (autos.isEmpty) {
         doHaveCar = false;
@@ -829,15 +840,17 @@ class _HomePageState extends State<HomePage> {
 
           userId =
               int.parse(result.data["User"]["Cars"][0]["userId"].toString());
+
+          print(activePayment);
         });
       }
     });
 
     await getDahk();
 
-    // if (isLoading) {
-    //   Navigator.pop(context);
-    // }
+    prefs.setStringList("autoList", currentAutoNumbers);
+    prefs.setInt("userId", userId);
+    prefs.setBool("activePayment", activePayment);
   }
 
   List<bool> autoDahk = [];

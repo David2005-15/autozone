@@ -108,7 +108,7 @@ class _VerifyPin extends State<VerifyPin> {
                                   .join(''));
 
                               if (success) {
-                                registrationService.verifyUser(prefs.getString("phone") ?? "",
+                                await registrationService.verifyUser(prefs.getString("phone") ?? "",
                                     _controllers.map((e) => e.text).join(''));
 
                                 Future.delayed(Duration.zero, () {

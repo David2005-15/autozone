@@ -157,6 +157,9 @@ class _RegistrationState extends State<Registration> {
                               .registerUser(_phoneNumberController.text);
 
                           if (registrationState == RegistrationState.regiter) {
+                            setState(() {
+                              countOfClicks = 0;
+                            });
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -165,6 +168,9 @@ class _RegistrationState extends State<Registration> {
                                         )));
                           } else if (registrationState ==
                               RegistrationState.login) {
+                            setState(() {
+                              countOfClicks = 0;
+                            });
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(

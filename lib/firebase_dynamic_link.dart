@@ -1,40 +1,9 @@
-import 'package:autozone/app/home/search_car.dart';
 import 'package:autozone/app/home/texzznum.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class FirebaseDynamicLink {
-  static Future<String> createDynamicLinkForIdram() async {
-    final dynamicLinkParams = DynamicLinkParameters(
-      link: Uri.parse("https://autozone.onepay.am/idram"),
-      uriPrefix: "https://autozone13.page.link",
-      androidParameters: const AndroidParameters(
-        packageName: "com.autozone13",
-        minimumVersion: 30,
-      ),
-    );
-
-    final dynamicLink =
-        await FirebaseDynamicLinks.instance.buildShortLink(dynamicLinkParams);
-
-    Uri url = dynamicLink.shortUrl;
-
-    print(url);
-
-    return url.toString();
-  }
-
-  static initDramPayment(BuildContext context, Key key) {
-    FirebaseDynamicLinks.instance.onLink.listen((PendingDynamicLinkData link) {
-      Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => SearchCarPage(
-                    key: key,
-                  )));
-    });
-  }
-
   static Future<String> createDynamicLink(TexPageData data) async {
     print(
         "https://autozone.onepay.am/pay?autoNumber=${data.autoNumber}&regNumber=${data.regNumber}&inspectionDate=${data.inspectionDate}&userId=${data.user_id}&dahk=${data.dahk}");
@@ -71,7 +40,9 @@ class FirebaseDynamicLink {
     return url.toString();
   }
 
-  static initDynamicLink(BuildContext context) {
+  static initDynamicLink(BuildContext context) async {
+    var prefs = await SharedPreferences.getInstance();
+
     FirebaseDynamicLinks.instance.onLink.listen((PendingDynamicLinkData link) {
       Uri deepLink = link.link;
 
@@ -84,16 +55,23 @@ class FirebaseDynamicLink {
       var redirect =
           bool.parse(deepLink.queryParameters["redirect"].toString());
 
-      TexPageData data = TexPageData(
-          inspectionDate: inspectionDate,
-          regNumber: regNumber,
-          redirect: redirect,
-          autoNumber: autoNumber,
-          user_id: userId,
-          dahk: dahk);
+      var isOpened = prefs.getBool("isOpened");
 
-      Navigator.push(context,
-          MaterialPageRoute(builder: (context) => TexPage(data: data)));
+      if (isOpened == true) {
+      } else {
+        prefs.setBool("isOpened", true);
+
+        TexPageData data = TexPageData(
+            inspectionDate: inspectionDate,
+            regNumber: regNumber,
+            redirect: redirect,
+            autoNumber: autoNumber,
+            user_id: userId,
+            dahk: dahk);
+
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => TexPage(data: data)));
+      }
     });
   }
 }

@@ -36,15 +36,15 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
   if (!isAllowed) return;
 
-  // int randomNumber = Random().nextInt(100);
+  int randomNumber = Random().nextInt(100);
 
-  // await AwesomeNotifications().createNotification(
-  //     content: NotificationContent(
-  //         id: randomNumber,
-  //         channelKey: 'alerts',
-  //         title: message.notification!.title,
-  //         body: message.notification!.body,
-  //         payload: {"id": message.data["id"]}));
+  await AwesomeNotifications().createNotification(
+      content: NotificationContent(
+          id: randomNumber,
+          channelKey: 'alerts',
+          title: message.notification!.title,
+          body: message.notification!.body,
+          payload: {"id": message.data["id"]}));
 }
 
 void main() async {

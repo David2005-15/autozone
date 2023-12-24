@@ -50,7 +50,7 @@ class _UserSettingsState extends State<UserSettings> {
 
     setState(() {
       imagePath = result.data["User"]["image"];
-      name = result.data["User"]["fullName"];
+      name = result.data["User"]["fullName"] ?? "";
     });
   }
 

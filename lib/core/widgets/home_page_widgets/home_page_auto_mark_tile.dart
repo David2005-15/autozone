@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 
 class HomePageAutoMarkTile extends StatelessWidget {
@@ -33,8 +34,11 @@ class HomePageAutoMarkTile extends StatelessWidget {
           children: <Widget>[
             Image(image: AssetImage(imagePath,), width: 30, height: 30,),
             const SizedBox(height: 5,),
-            Text(
+            AutoSizeText(
               autoNumber,
+              maxFontSize: 12,
+              minFontSize: 9,
+              maxLines: 1,
               style: TextStyle(
                 fontWeight: FontWeight.w700,
                 fontSize: 12,

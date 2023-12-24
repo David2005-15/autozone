@@ -100,7 +100,7 @@ class SearchCarPageState extends State<SearchCarPage> {
 
   int paymentCounter = 5;
 
-  bool isActive = false;
+  bool isActive = true;
 
   Future getActivePayment() async {
     Dio dio = Dio();
@@ -142,9 +142,9 @@ class SearchCarPageState extends State<SearchCarPage> {
 
   @override
   void initState() {
-    setState(() {
-      isActive = paymentSignleton.isPayment;
-    });
+    // setState(() {
+    //   isActive = paymentSignleton.isPayment;
+    // });
 
     setState(() {
       id = widget.userId!;
@@ -164,15 +164,15 @@ class SearchCarPageState extends State<SearchCarPage> {
 
     Future.wait([database, messaging]);
 
-    timer = Timer.periodic(const Duration(seconds: 2), (timer) async {
-      await getActivePayment();
+    // timer = Timer.periodic(const Duration(seconds: 2), (timer) async {
+    //   await getActivePayment();
 
-      if (isActive == true) {
-        timer.cancel();
-      }
+    //   if (isActive == true) {
+    //     timer.cancel();
+    //   }
 
-      paymentCounter--;
-    });
+    //   paymentCounter--;
+    // });
   }
 
   int id = 0;
@@ -184,7 +184,7 @@ class SearchCarPageState extends State<SearchCarPage> {
     setState(() {
       id = prefs.getInt("userId")!;
       autoList = prefs.getStringList("autoList")!;
-      isActive = prefs.getBool("activePayment")!;
+      // isActive = prefs.getBool("activePayment")!;
     });
   }
 
@@ -429,6 +429,13 @@ class SearchCarPageState extends State<SearchCarPage> {
                                               options: Options(headers: {
                                                 "Authorization": "Bearer $token"
                                               }));
+
+                                          var paymentId = result.data["id"];
+
+                                          Uri url = Uri.parse(
+                                              "https://telcellwallet.page.link/?link=https://com.telcell.app?actionType%3DinvoiceId%26actionValue%3D$paymentId&apn=ru.deltapay.puntopago.telcell&isi=1324511564&ibi=com.telcell.app");
+
+                                          await launchUrl(url);
                                         } else if (selectedType ==
                                             PaymentType.idram) {
                                           var result = await dio.post(
@@ -453,10 +460,6 @@ class SearchCarPageState extends State<SearchCarPage> {
                                           );
 
                                           await launchUrl(uri);
-
-                                          // setState(() {
-                                          //   isActive = true;
-                                          // });
                                         }
                                       }
                                     : null,
@@ -655,11 +658,11 @@ class SearchCarPageState extends State<SearchCarPage> {
                             count = prefs.getInt("count");
                           }
 
-                          // if (count == 2) {
-                          //   failAutoRequest(context,
-                          //       "Դուք կարող եք օրեկան ուղարկել առավելագույնը 2 ծանուցում");
-                          //   return;
-                          // }
+                          if (count! >= 6) {
+                            failAutoRequest(context,
+                                "Դուք կարող եք օրեկան ուղարկել առավելագույնը 6 ծանուցում");
+                            return;
+                          }
 
                           await database
                               .child("messages")
@@ -708,11 +711,11 @@ class SearchCarPageState extends State<SearchCarPage> {
                             count = prefs.getInt("count");
                           }
 
-                          // if (count == 2) {
-                          //   failAutoRequest(context,
-                          //       "Դուք կարող եք օրեկան ուղարկել առավելագույնը 2 ծանուցում");
-                          //   return;
-                          // }
+                          if (count! >= 6) {
+                            failAutoRequest(context,
+                                "Դուք կարող եք օրեկան ուղարկել առավելագույնը 6 ծանուցում");
+                            return;
+                          }
 
                           await database
                               .child("messages")
@@ -766,11 +769,11 @@ class SearchCarPageState extends State<SearchCarPage> {
                             count = prefs.getInt("count");
                           }
 
-                          // if (count == 2) {
-                          //   failAutoRequest(context,
-                          //       "Դուք կարող եք օրեկան ուղարկել առավելագույնը 2 ծանուցում");
-                          //   return;
-                          // }
+                          if (count! >= 6) {
+                            failAutoRequest(context,
+                                "Դուք կարող եք օրեկան ուղարկել առավելագույնը 6 ծանուցում");
+                            return;
+                          }
 
                           await database
                               .child("messages")
@@ -820,11 +823,11 @@ class SearchCarPageState extends State<SearchCarPage> {
                             count = prefs.getInt("count");
                           }
 
-                          // if (count == 2) {
-                          //   failAutoRequest(context,
-                          //       "Դուք կարող եք օրեկան ուղարկել առավելագույնը 2 ծանուցում");
-                          //   return;
-                          // }
+                          if (count! >= 6) {
+                            failAutoRequest(context,
+                                "Դուք կարող եք օրեկան ուղարկել առավելագույնը 6 ծանուցում");
+                            return;
+                          }
 
                           await database
                               .child("messages")
@@ -877,11 +880,11 @@ class SearchCarPageState extends State<SearchCarPage> {
                             count = prefs.getInt("count");
                           }
 
-                          // if (count == 2) {
-                          //   failAutoRequest(context,
-                          //       "Դուք կարող եք օրեկան ուղարկել առավելագույնը 2 ծանուցում");
-                          //   return;
-                          // }
+                          if (count! >= 6) {
+                            failAutoRequest(context,
+                                "Դուք կարող եք օրեկան ուղարկել առավելագույնը 6 ծանուցում");
+                            return;
+                          }
 
                           await database
                               .child("messages")
@@ -928,11 +931,11 @@ class SearchCarPageState extends State<SearchCarPage> {
                             count = prefs.getInt("count");
                           }
 
-                          // if (count == 2) {
-                          //   failAutoRequest(context,
-                          //       "Դուք կարող եք օրեկան ուղարկել առավելագույնը 2 ծանուցում");
-                          //   return;
-                          // }
+                          if (count! >= 6) {
+                            failAutoRequest(context,
+                                "Դուք կարող եք օրեկան ուղարկել առավելագույնը 6 ծանուցում");
+                            return;
+                          }
                           success(context, "Հաղորդագրությունն\nուղարկված է");
 
                           await database
@@ -984,11 +987,12 @@ class SearchCarPageState extends State<SearchCarPage> {
                             count = prefs.getInt("count");
                           }
 
-                          // if (count == 2) {
-                          //   failAutoRequest(context,
-                          //       "Դուք կարող եք օրեկան ուղարկել առավելագույնը 2 ծանուցում");
-                          //   return;
-                          // }
+                          if (count! >= 6) {
+                            failAutoRequest(context,
+                                "Դուք կարող եք օրեկան ուղարկել առավելագույնը 6 ծանուցում");
+                            return;
+                          }
+
                           await database
                               .child("messages")
                               .child("message${const Uuid().v4()}")
@@ -1035,11 +1039,11 @@ class SearchCarPageState extends State<SearchCarPage> {
                             count = prefs.getInt("count");
                           }
 
-                          // if (count == 2) {
-                          //   failAutoRequest(context,
-                          //       "Դուք կարող եք օրեկան ուղարկել առավելագույնը 2 ծանուցում");
-                          //   return;
-                          // }
+                          if (count! >= 6) {
+                            failAutoRequest(context,
+                                "Դուք կարող եք օրեկան ուղարկել առավելագույնը 6 ծանուցում");
+                            return;
+                          }
 
                           await database
                               .child("messages")

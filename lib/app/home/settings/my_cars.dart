@@ -4,6 +4,7 @@ import 'package:autozone/core/alert_dialogs/choose_tm_type.dart';
 import 'package:autozone/core/factory/button_factory.dart';
 import 'package:autozone/domain/new_auto_repo/iauto.dart';
 import 'package:dio/dio.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:kfx_dependency_injection/kfx_dependency_injection.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -25,6 +26,7 @@ class _MyCarsPageState extends State<MyCarsPage> {
   @override
   void initState() {
     getUserData();
+    initFirebaseApp();
     super.initState();
   }
 
@@ -122,6 +124,14 @@ class _MyCarsPageState extends State<MyCarsPage> {
                     )
                   : Container(),
         ));
+  }
+
+  DatabaseReference? database;
+
+  Future initFirebaseApp() async {
+    setState(() {
+      database = FirebaseDatabase.instance.ref();
+    });
   }
 
   Widget buildAutoTile(
@@ -238,6 +248,25 @@ class _MyCarsPageState extends State<MyCarsPage> {
                     "https://autozone.onepay.am/api/v1/cars/deleteCar/$techNumber");
 
                 await getUserData();
+
+                DatabaseEvent insurance_snapshot =
+                    await database!.child("inspection_due").once();
+
+                final insurance_data = insurance_snapshot.snapshot.value is Map
+                    ? insurance_snapshot.snapshot.value as Map<dynamic, dynamic>
+                    : {};
+                final instrance_document = insurance_data.values
+                    .toList()
+                    .cast<Map<dynamic, dynamic>>();
+
+                for (var i = 0; i < instrance_document.length; i++) {
+                  if (carNumber == instrance_document[i]["car_number"]) {
+                    database!
+                        .child("inspection_due")
+                        .child(insurance_data.keys.toList()[i])
+                        .remove();
+                  }
+                }
 
                 if (cars.isEmpty) {
                   Navigator.push(

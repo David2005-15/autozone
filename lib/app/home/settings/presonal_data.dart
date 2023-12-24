@@ -1,6 +1,7 @@
 import 'package:autozone/app/registration/registration.dart';
 import 'package:autozone/core/factory/button_factory.dart';
 import 'package:dio/dio.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -34,9 +35,13 @@ class _PersonalDataState extends State<PersonalData> {
 
   bool isValidEmail = false;
 
+  DatabaseReference? database;
+
   @override
   void initState() {
     var request = getUserData();
+
+    initFirebaseApp();
 
     Future.wait([request]).then((value) {
       emailController.text = email;
@@ -52,6 +57,12 @@ class _PersonalDataState extends State<PersonalData> {
     });
 
     super.initState();
+  }
+
+  Future initFirebaseApp() async {
+    setState(() {
+      database = FirebaseDatabase.instance.ref();
+    });
   }
 
   @override
@@ -260,6 +271,34 @@ class _PersonalDataState extends State<PersonalData> {
                             "https://autozone.onepay.am/api/v1/users/deleteUser",
                             options:
                                 Options(headers: {"Authorization": token}));
+
+                        var autos = prefs.getStringList("autoList") ?? [];
+
+                        if (autos != []) {
+                          DatabaseEvent insurance_snapshot =
+                              await database!.child("inspection_due").once();
+
+                          final insurance_data =
+                              insurance_snapshot.snapshot.value is Map
+                                  ? insurance_snapshot.snapshot.value
+                                      as Map<dynamic, dynamic>
+                                  : {};
+                          final instrance_document = insurance_data.values
+                              .toList()
+                              .cast<Map<dynamic, dynamic>>();
+
+                          for (var i = 0; i < instrance_document.length; i++) {
+                            if (autos.any((element) =>
+                                element ==
+                                instrance_document[i]["car_number"])) {
+
+                              database!
+                                  .child("inspection_due")
+                                  .child(insurance_data.keys.toList()[i])
+                                  .remove();
+                            }
+                          }
+                        }
 
                         prefs.clear();
 

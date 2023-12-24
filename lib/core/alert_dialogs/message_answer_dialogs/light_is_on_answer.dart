@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:autozone/core/alert_dialogs/report.dart';
 import 'package:autozone/core/alert_dialogs/success.dart';
 import 'package:autozone/core/factory/button_factory.dart';
@@ -29,8 +30,11 @@ void lightIsOnAnswer(
                       borderRadius: BorderRadius.only(
                           topRight: Radius.circular(5),
                           topLeft: Radius.circular(5))),
-                  child: Text(
+                  child: AutoSizeText(
                     "$carNumber մեքենայի վարորդ, Ձեր մեքենայի լուսարձակները միացված են։",
+                    minFontSize: 10,
+                    maxFontSize: 14,
+                    maxLines: 2,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       fontWeight: FontWeight.w700,

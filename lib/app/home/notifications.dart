@@ -268,8 +268,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
         parsedDate.month == today.month &&
         parsedDate.day == today.day;
 
-    print(parsedDate.hour);
-
     return Container(
       width: double.infinity,
       height: 150,
@@ -373,9 +371,16 @@ class _NotificationsPageState extends State<NotificationsPage> {
     DateTime parsedDate = DateTime.parse(dueDate);
     DateTime parsedDateRec = DateTime.parse(date);
 
+    DateTime today = DateTime.now();
+
+
+    bool isToday = parsedDateRec.year == today.year &&
+        parsedDateRec.month == today.month &&
+        parsedDateRec.day == today.day;
+
     return Container(
       width: double.infinity,
-      height: 140,
+      height: 150,
       padding: const EdgeInsets.only(left: 15, right: 15, top: 10, bottom: 10),
       decoration: const BoxDecoration(
           border: Border(
@@ -425,7 +430,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
             ],
           ),
           Text(
-            "$carNumber մեքենայի տեխզննման ժամկետն ավարտվում է ${parsedDate.day}.${parsedDate.month}.${parsedDate.year}թ.-ին:",
+            "$carNumber մեքենայի տեխզննման ժամկետն ավարտվում է ${parsedDate.day}.${parsedDate.month.toString().padLeft(2, '0')}.${parsedDate.year}թ.-ին:",
             style: const TextStyle(
               fontWeight: FontWeight.w700,
               fontSize: 14,
@@ -472,6 +477,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                   ),
                 ),
                 Text(
+                  isToday ? "Այսօր ${parsedDateRec.hour.toString().padLeft(2, '0')}:${parsedDateRec.minute.toString().padLeft(2, '0')}":
                   "${parsedDateRec.day.toString().padLeft(2, '0')}.${parsedDateRec.month}.${parsedDateRec.year} ${parsedDateRec.hour.toString().padLeft(2, '0')}:${parsedDateRec.minute.toString().padLeft(2, '0')}",
                   style: const TextStyle(
                       fontWeight: FontWeight.w700,

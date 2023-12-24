@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:autozone/app/add_new_car/new_car_page.dart';
 import 'package:autozone/app/home/appa_page.dart';
+import 'package:autozone/app/home/dahk_page.dart';
+import 'package:autozone/app/home/dept_page.dart';
 import 'package:autozone/app/home/search_car.dart';
 import 'package:autozone/app/home/settings/add_new_car.dart';
 import 'package:autozone/app/home/texzznum.dart';
@@ -119,13 +121,8 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  void stringUrl() {
-    FirebaseDynamicLink.createDynamicLinkForIdram();
-  }
-
   @override
   void initState() {
-    stringUrl();
     checkDate();
     // Future.delayed(Duration(seconds: 2), () {updateDialog(context);});
     // updateDialog(context);
@@ -150,9 +147,11 @@ class _HomePageState extends State<HomePage> {
       Future.delayed(const Duration(seconds: 2), () async {
         await checkInspectionDate(autoTexDates, currentAutoNumbers);
       });
+
+      changeNotifcation();
     });
 
-    Future.wait([init, setToken]).then((value) {
+    Future.wait([init, setToken, auto]).then((value) {
       database!.child("messages").onChildAdded.listen((event) {
         DataSnapshot snapshot = event.snapshot;
 
@@ -339,9 +338,6 @@ class _HomePageState extends State<HomePage> {
                                 onTap: () async {
                                   String phoneNumber =
                                       "${value["phoneNumber"]}";
-
-                                  // print(phoneNumber);
-
                                   Uri url = Uri.parse('tel:$phoneNumber');
 
                                   if (await canLaunchUrl(url)) {
@@ -375,6 +371,7 @@ class _HomePageState extends State<HomePage> {
         }
       });
     });
+
     super.initState();
   }
 
@@ -394,6 +391,40 @@ class _HomePageState extends State<HomePage> {
         },
       ),
     );
+  }
+
+  int notitifcations = 0;
+
+  void changeNotifcation() async {
+    DatabaseEvent snapshot = await database!.child("messages").once();
+
+    final data = snapshot.snapshot.value is Map
+        ? snapshot.snapshot.value as Map<dynamic, dynamic>
+        : {};
+
+    var prefs = await SharedPreferences.getInstance();
+
+    final documents = data.values.toList().cast<Map<dynamic, dynamic>>();
+
+    var tempDocuments = documents
+        .where((element) =>
+            element["requested_user_id"] == userId ||
+            element["issued_user_id"] == userId)
+        .toList();
+
+    String listOfMapsAsString =
+        tempDocuments.map((map) => map.toString()).join('\n');
+
+    String oldNotifcaitons = prefs.getString("notifications") ?? "";
+
+    if (oldNotifcaitons == "") {
+    } else if (oldNotifcaitons != listOfMapsAsString) {
+      setState(() {
+        notificationCount = 1;
+      });
+    }
+
+    prefs.setString("notifications", listOfMapsAsString);
   }
 
   Future initFirebaseApp() async {
@@ -711,7 +742,31 @@ class _HomePageState extends State<HomePage> {
                                                 autiInspectionCompanies[
                                                     _selected])));
                               },
-                            )
+                            ),
+                            HomePageControlTile(
+                                title: "ԴԱՀԿ",
+                                date: "-",
+                                onTap: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => DahkPage(
+                                                dahk: autoDahk[_selected],
+                                              )));
+                                }),
+                            HomePageControlTile(
+                                title: "Գույքահարկ",
+                                date: "-",
+                                onTap: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => DeptPage(
+                                                selectedTexInfo:
+                                                    selectedTechNumber,
+                                                dept: depts[_selected],
+                                              )));
+                                })
                           ],
                         ),
                       ),
@@ -729,6 +784,49 @@ class _HomePageState extends State<HomePage> {
                       key: searchCarPageKey,
                     )),
     );
+  }
+
+  var dept = 0;
+
+  List<int> depts = [];
+
+  Future updateDeptData() async {
+    var prefs = await SharedPreferences.getInstance();
+
+    var phone = prefs.getString('phone');
+
+    Dio dio = Dio();
+
+    setState(() {
+      depts = [];
+    });
+
+    for (int i = 0; i < autos.length; i++) {
+      var body = {
+        "techNumber": autos[i]["carTechNumber"],
+        "phoneNumber": "374$phone"
+      };
+
+      var result = await dio.post(
+        "https://autozone.onepay.am/api/v1/users/GetDEBTInfo",
+        data: body,
+        options: Options(
+            validateStatus: (status) => true,
+            headers: {"Authorization": "Bearer ${prefs.getString("token")}"}),
+      );
+
+      setState(() {
+        if (result.data["debt"] != null) {
+          depts.add(result.data["debt"] as int);
+        } else {
+          depts.add(0);
+        }
+      });
+    }
+
+    var stringDebtsTemp = depts.map((e) => e.toString()).toList();
+
+    prefs.setStringList("debts", stringDebtsTemp);
   }
 
   Future<String> getLogoPath(String autoMark) async {
@@ -774,7 +872,7 @@ class _HomePageState extends State<HomePage> {
 
     bool isThereChange = prefs.getBool("changes") ?? false;
 
-    if (autos.isEmpty || isThereChange) {
+    if (isThereChange || userId == 0) {
       prefs.setBool("changes", false);
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -794,16 +892,13 @@ class _HomePageState extends State<HomePage> {
               },
             ));
 
-    if (isLoading) {
-      Navigator.pop(context);
-    }
-
     await checkForUpdate();
 
     bool activePayment = false;
 
     setState(() {
       autos = result.data["User"]["Cars"];
+
       autoImagePath = [];
 
       if (result.data["User"]["id"] != null) {
@@ -825,6 +920,8 @@ class _HomePageState extends State<HomePage> {
         selectedTechNumber = autos[0]["carTechNumber"];
         selectedAutoNumber = autos[0]["carNumber"];
 
+        // updateDeptData();
+
         autos.forEach((element) async {
           autoImagePath.add(await getLogoPath(element["carMark"]));
           autoInspectionDates.add(DateTime.parse(element["insuranceEndDate"] ??
@@ -845,6 +942,12 @@ class _HomePageState extends State<HomePage> {
         });
       }
     });
+
+    await updateDeptData();
+
+    if (isLoading) {
+      Navigator.pop(context);
+    }
 
     await getDahk();
 
@@ -871,25 +974,11 @@ class _HomePageState extends State<HomePage> {
       dahkInfo = result.data;
     });
 
-    // print(result.data);
-
-    // var keys = result.data.keys.toList();
-    // var values = result.data.values.toList();
     for (var element in currentAutoNumbers) {
-      // print(element);
-      // var result = await autoService.addAuto(element["carTechNumber"])
       setState(() {
         autoDahk.add(result.data[element] as bool);
       });
     }
-
-    // for (var element in autos) {
-    //   var result = await autoService.addAuto(element["carTechNumber"]);
-
-    //   setState(() {
-    //     autoDahk.add(result["dahk"] as bool);
-    //   });
-    // }
   }
 
   Future checkInspectionDate(
@@ -934,7 +1023,7 @@ class _HomePageState extends State<HomePage> {
                     foregroundColor: _selected == i && autos.length != 1
                         ? const Color(0xffF3F4F6)
                         : const Color(0xff164866),
-                    onPressed: () {
+                    onPressed: () async {
                       setState(() {
                         selectedTechNumber = autos[i]["carTechNumber"];
                         selectedAutoNumber = autos[i]["carNumber"];

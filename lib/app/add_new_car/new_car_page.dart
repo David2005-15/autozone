@@ -91,6 +91,7 @@ class _NewCarPageState extends State<NewCarPage> {
         children: <Widget>[
           const Text(
             "Մուտքագրեք վկայագրի համարը",
+            textAlign: TextAlign.center,
             style: TextStyle(
               fontWeight: FontWeight.w700,
               fontSize: 15,
